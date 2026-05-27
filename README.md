@@ -20,6 +20,19 @@ npm run build
 npm run typecheck
 ```
 
+## MCP Server
+
+The docs site at `apps/public` exposes a static [Model Context Protocol](https://modelcontextprotocol.io) server so AI tools (Cursor, Claude Code, Codex, etc.) can read MRBD docs while writing apps.
+
+Endpoint: `https://<your-docs-host>/api/mcp/mcp` (Streamable HTTP, no auth).
+
+Exposes:
+
+- Resources for every doc page plus a full bundle.
+- Tools: `list_docs`, `get_doc`, `search_docs`.
+
+See `docs/mcp` for client setup, and `docs/meta-wearables-webapp` for how to use these packages alongside Meta's official `meta-wearables-webapp` plugin.
+
 ## Create An App
 
 ```bash
