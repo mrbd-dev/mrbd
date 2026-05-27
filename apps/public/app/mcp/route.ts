@@ -1,6 +1,6 @@
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
-import { getDoc, getDocs } from "../../../../lib/docs";
+import { getDoc, getDocs } from "../../lib/docs";
 
 const SITE_DESCRIPTION =
   "MRBD docs: unofficial npm packages and guidance for building web apps for Meta Ray-Ban Display glasses.";
@@ -160,7 +160,7 @@ const handler = createMcpHandler(
     },
   },
   {
-    basePath: "/api/mcp",
+    streamableHttpEndpoint: "/mcp",
     maxDuration: 60,
     disableSse: true,
     verboseLogs: false,
