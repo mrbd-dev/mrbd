@@ -40,4 +40,6 @@ useDpadNavigation({
 
 `useMrbdLocation()` exposes `result`, `loading`, and `getCurrentPosition()`.
 
+`useMetaRayBanDisplayRequest(headers)` returns whether the supplied request headers identify the Meta Ray-Ban Display browser.
+
 The React package has a peer dependency on React and depends on `@mrbd/core`.

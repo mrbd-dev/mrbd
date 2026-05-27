@@ -30,6 +30,11 @@ npm install @mrbd/core
 - `getCurrentMrbdPosition(options)` wraps `navigator.geolocation.getCurrentPosition`.
 - `watchMrbdPosition(onPosition, onError, options)` wraps `navigator.geolocation.watchPosition` and returns a `stop()` handle.
 
+## Request detection
+
+- `isMetaRayBanDisplayRequest(headers)` checks whether `x-requested-with` is `com.meta.smartglass.app.browser`.
+- `getMrbdRequestedWithHeader(headers)` reads the MRBD browser header from a `Request`, `Headers`, header record, or iterable header entries.
+
 ## Storage
 
 - `readStoredJson(key, fallback, storage?)`
