@@ -24,7 +24,7 @@ npm run typecheck
 
 The docs site at `apps/public` exposes a static [Model Context Protocol](https://modelcontextprotocol.io) server so AI tools (Cursor, Claude Code, Codex, etc.) can read MRBD docs while writing apps.
 
-Endpoint: `https://<your-docs-host>/mcp` (Streamable HTTP, no auth).
+Endpoint: `https://mrbd.dev/mcp` (Streamable HTTP, no auth).
 
 Exposes:
 

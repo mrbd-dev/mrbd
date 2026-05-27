@@ -12,7 +12,7 @@ The server is stateless, read-only, and exposes only this site's documentation.
 ## Endpoint
 
 ```
-https://<your-docs-host>/mcp
+https://mrbd.dev/mcp
 ```
 
 The transport is Streamable HTTP. No authentication. No cookies. No mutation tools.
@@ -45,7 +45,7 @@ Add an entry to `~/.cursor/mcp.json` (or your project's `.cursor/mcp.json`):
   "mcpServers": {
     "mrbd-docs": {
       "type": "http",
-      "url": "https://<your-docs-host>/mcp"
+      "url": "https://mrbd.dev/mcp"
     }
   }
 }
@@ -54,7 +54,7 @@ Add an entry to `~/.cursor/mcp.json` (or your project's `.cursor/mcp.json`):
 ## Connect from Claude Code
 
 ```bash
-claude mcp add --transport http mrbd-docs https://<your-docs-host>/mcp
+claude mcp add --transport http mrbd-docs https://mrbd.dev/mcp
 ```
 
 ## Connect from Codex CLI
@@ -63,7 +63,7 @@ claude mcp add --transport http mrbd-docs https://<your-docs-host>/mcp
 # ~/.codex/config.toml
 [mcp_servers.mrbd-docs]
 type = "http"
-url = "https://<your-docs-host>/mcp"
+url = "https://mrbd.dev/mcp"
 ```
 
 ## Stdio-only clients
@@ -75,7 +75,7 @@ If your client only speaks stdio, bridge to the HTTP endpoint with `mcp-remote`:
   "mcpServers": {
     "mrbd-docs": {
       "command": "npx",
-      "args": ["-y", "mcp-remote", "https://<your-docs-host>/mcp"]
+      "args": ["-y", "mcp-remote", "https://mrbd.dev/mcp"]
     }
   }
 }
@@ -84,7 +84,7 @@ If your client only speaks stdio, bridge to the HTTP endpoint with `mcp-remote`:
 ## Verify
 
 ```bash
-curl -sS -X POST https://<your-docs-host>/mcp \
+curl -sS -X POST https://mrbd.dev/mcp \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
