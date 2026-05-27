@@ -1,3 +1,4 @@
+import { GitHubRepoLink } from "../components/GitHubRepoLink";
 import { getDocs, type DocPage } from "../../lib/docs";
 import { Markdown } from "../../lib/markdown";
 import { CopyMarkdownButton } from "./CopyMarkdownButton";
@@ -9,9 +10,12 @@ export function DocsPage({ page }: { page: DocPage }) {
   return (
     <main className="docs-layout">
       <aside className="docs-sidebar">
-        <a className="docs-brand" href="/">
-          mrbd
-        </a>
+        <div className="docs-brand-row">
+          <a className="docs-brand" href="/">
+            mrbd
+          </a>
+          <GitHubRepoLink className="docs-repo-link" />
+        </div>
         <nav aria-label="Documentation">
           {docs.map((doc) => (
             <a aria-current={doc.slug === page.slug ? "page" : undefined} href={doc.slug === "introduction" ? "/docs" : `/docs/${doc.slug}`} key={doc.slug}>
