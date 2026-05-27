@@ -1,0 +1,42 @@
+{
+  "name": "@mrbd/core",
+  "version": "0.1.0",
+  "description": "Framework-agnostic utilities for Meta Ray-Ban Display web apps.",
+  "type": "module",
+  "license": "MIT",
+  "author": "mrbd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrbd-dev/mrbd.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/mrbd-dev/mrbd#readme",
+  "bugs": {
+    "url": "https://github.com/mrbd-dev/mrbd/issues"
+  },
+  "keywords": [
+    "mrbd",
+    "meta-ray-ban-display",
+    "wearables",
+    "dpad",
+    "glasses"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

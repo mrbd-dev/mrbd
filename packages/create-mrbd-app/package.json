@@ -1,0 +1,42 @@
+{
+  "name": "create-mrbd-app",
+  "version": "0.1.0",
+  "description": "Create a Meta Ray-Ban Display web app.",
+  "type": "module",
+  "license": "MIT",
+  "author": "mrbd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrbd-dev/mrbd.git",
+    "directory": "packages/create-mrbd-app"
+  },
+  "homepage": "https://github.com/mrbd-dev/mrbd#readme",
+  "bugs": {
+    "url": "https://github.com/mrbd-dev/mrbd/issues"
+  },
+  "keywords": [
+    "mrbd",
+    "meta-ray-ban-display",
+    "cli",
+    "create",
+    "wearables"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "create-mrbd-app": "./bin/create-mrbd-app.mjs"
+  },
+  "files": [
+    "bin",
+    "templates",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node --check bin/create-mrbd-app.mjs",
+    "typecheck": "node --check bin/create-mrbd-app.mjs"
+  },
+  "engines": {
+    "node": ">=18.18"
+  }
+}

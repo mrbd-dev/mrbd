@@ -1,0 +1,27 @@
+{
+  "name": "mrbd",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "public:dev": "npm run dev --workspace @mrbd/public",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "publish-packages": "changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.6",
+    "postcss": "^8.5.15",
+    "typescript": "^5.9.3"
+  }
+}

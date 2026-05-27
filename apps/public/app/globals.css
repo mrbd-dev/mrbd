@@ -1,0 +1,192 @@
+:root {
+  color-scheme: dark;
+  --bg: #000000;
+  --fg: #ffffff;
+  --muted: #8a8a8a;
+  --border: #2a2a2a;
+  --surface: #0a0a0a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.page {
+  margin: 0 auto;
+  max-width: 720px;
+  padding: 48px 24px 96px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+  margin-bottom: 64px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.nav a {
+  margin-left: 16px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.nav a:hover {
+  color: var(--fg);
+}
+
+h1,
+h2,
+h3,
+p,
+ul {
+  margin: 0;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+
+h2 {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+p {
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+p.lead {
+  color: var(--fg);
+  font-size: 17px;
+  margin-bottom: 32px;
+}
+
+section {
+  margin-bottom: 64px;
+}
+
+.snippet {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  margin-bottom: 16px;
+}
+
+.snippet pre {
+  flex: 1;
+  margin: 0;
+  padding: 16px 20px;
+  overflow-x: auto;
+  color: var(--fg);
+  font-size: 14px;
+}
+
+.snippet button {
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 0 20px;
+  cursor: pointer;
+}
+
+.snippet button:hover {
+  color: var(--fg);
+}
+
+.links {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.links a {
+  border: 1px solid var(--border);
+  color: var(--fg);
+  text-decoration: none;
+  padding: 10px 16px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.links a:hover {
+  background: var(--surface);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+
+.list li {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 24px;
+  border-bottom: 1px solid var(--border);
+  padding: 16px 0;
+}
+
+.list code {
+  color: var(--fg);
+  font-size: 14px;
+}
+
+.list span {
+  color: var(--muted);
+}
+
+footer {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+@media (max-width: 560px) {
+  .list li {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
