@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { GitHubRepoLink } from "./components/GitHubRepoLink";
 
 const CLI_COMMAND = "npm create mrbd-app@latest";
 
@@ -39,6 +40,7 @@ export default function PublicHome() {
         <div>
           <a href="#packages">Packages</a>
           <a href="/docs">Docs</a>
+          <GitHubRepoLink />
         </div>
       </nav>
 

@@ -56,12 +56,29 @@ a {
   top: 40px;
 }
 
+.docs-brand-row {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.docs-repo-link {
+  color: var(--muted);
+  display: inline-flex;
+  line-height: 0;
+}
+
+.docs-repo-link:hover {
+  color: var(--fg);
+}
+
 .docs-brand {
   color: var(--fg);
   display: block;
   font-size: 13px;
   letter-spacing: 0.12em;
-  margin-bottom: 28px;
+  margin-bottom: 0;
   text-decoration: none;
   text-transform: uppercase;
 }
@@ -146,6 +163,12 @@ a {
 
 .nav a:hover {
   color: var(--fg);
+}
+
+.nav a:has(svg) {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
 }
 
 h1,
