@@ -38,6 +38,94 @@ a {
   padding: 48px 24px 96px;
 }
 
+.docs-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 760px);
+  gap: 48px;
+  margin: 0 auto;
+  max-width: 1120px;
+  padding: 40px 24px 96px;
+}
+
+.docs-sidebar {
+  align-self: start;
+  border-right: 1px solid var(--border);
+  min-height: calc(100vh - 80px);
+  padding-right: 24px;
+  position: sticky;
+  top: 40px;
+}
+
+.docs-brand {
+  color: var(--fg);
+  display: block;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  margin-bottom: 28px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.docs-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.docs-sidebar nav a {
+  border-left: 1px solid transparent;
+  color: var(--muted);
+  padding: 7px 0 7px 12px;
+  text-decoration: none;
+}
+
+.docs-sidebar nav a:hover,
+.docs-sidebar nav a[aria-current="page"] {
+  border-left-color: var(--fg);
+  color: var(--fg);
+}
+
+.docs-content {
+  min-width: 0;
+}
+
+.docs-header {
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-bottom: 40px;
+  padding-bottom: 32px;
+}
+
+.docs-actions {
+  align-items: flex-start;
+  display: flex;
+  gap: 8px;
+}
+
+.plain-button,
+.plain-link {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  padding: 10px 12px;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.plain-button:hover,
+.plain-link:hover {
+  background: var(--surface);
+}
+
 .nav {
   display: flex;
   align-items: center;
@@ -93,6 +181,14 @@ p.lead {
   color: var(--fg);
   font-size: 17px;
   margin-bottom: 32px;
+}
+
+.eyebrow {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
 }
 
 section {
@@ -153,6 +249,27 @@ section {
   background: var(--surface);
 }
 
+.toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.toc a {
+  border: 1px solid var(--border);
+  color: var(--fg);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  padding: 8px 12px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.toc a:hover {
+  background: var(--surface);
+}
+
 .list {
   list-style: none;
   padding: 0;
@@ -176,6 +293,100 @@ section {
   color: var(--muted);
 }
 
+.inline-code,
+.codeblock {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.inline-code {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+}
+
+.exports {
+  display: block;
+  margin-top: 10px;
+}
+
+.example {
+  border-top: 1px solid var(--border);
+  padding: 20px 0;
+}
+
+.example h3 {
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.codeblock {
+  margin: 0;
+  padding: 16px;
+}
+
+.markdown h1 {
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+}
+
+.markdown h2 {
+  border-top: 1px solid var(--border);
+  color: var(--fg);
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  margin: 48px 0 16px;
+  padding-top: 24px;
+  text-transform: none;
+}
+
+.markdown h3 {
+  color: var(--fg);
+  font-size: 16px;
+  margin: 28px 0 12px;
+}
+
+.markdown p,
+.markdown li {
+  color: var(--muted);
+}
+
+.markdown p {
+  margin-bottom: 16px;
+}
+
+.markdown ul {
+  border-top: 1px solid var(--border);
+  list-style: none;
+  margin: 20px 0;
+  padding: 0;
+}
+
+.markdown li {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+}
+
+.markdown a {
+  color: var(--fg);
+}
+
+.markdown code {
+  color: var(--fg);
+}
+
+.markdown .codeblock {
+  margin: 20px 0;
+}
+
 footer {
   border-top: 1px solid var(--border);
   padding-top: 24px;
@@ -188,5 +399,27 @@ footer {
   .list li {
     grid-template-columns: 1fr;
     gap: 4px;
+  }
+}
+
+@media (max-width: 860px) {
+  .docs-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .docs-sidebar {
+    border-bottom: 1px solid var(--border);
+    border-right: 0;
+    min-height: 0;
+    padding: 0 0 20px;
+    position: static;
+  }
+
+  .docs-header {
+    grid-template-columns: 1fr;
+  }
+
+  .docs-actions {
+    flex-wrap: wrap;
   }
 }
