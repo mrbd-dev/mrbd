@@ -45,3 +45,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
+          # NPM_TOKEN is only used as a fallback for the first publish of each
+          # package. Once trusted publishing is configured on npmjs.com for a
+          # package, the npm CLI prefers OIDC and ignores this token.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
