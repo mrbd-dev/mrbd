@@ -7,6 +7,8 @@ order: 12
 
 `mrbd start` exposes your local dev server through a short-lived public HTTPS tunnel. Use this when you want to test an app on glasses before deploying it.
 
+Apps created with `npm create mrbd-app@latest` already include `mrbd-cli` and an `mrbd:start` npm script.
+
 ```bash
 npm run mrbd:start
 ```

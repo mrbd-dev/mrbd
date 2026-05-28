@@ -17,7 +17,7 @@ const packages = [
   },
   {
     name: "create-mrbd-app",
-    body: "CLI that scaffolds a Next.js starter with MRBD-safe defaults.",
+    body: "CLI that scaffolds a Next.js starter with MRBD-safe defaults and mrbd-cli for npm run mrbd:start.",
   },
 ];
 

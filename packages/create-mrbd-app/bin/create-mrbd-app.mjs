@@ -21,6 +21,8 @@ Usage:
   npm create mrbd-app@latest
   npx create-mrbd-app
 
+The scaffold includes mrbd-cli and an npm run mrbd:start script for HTTPS tunnel testing.
+
 Options:
   --force     Write into an existing directory
   --install   Run npm install after scaffolding

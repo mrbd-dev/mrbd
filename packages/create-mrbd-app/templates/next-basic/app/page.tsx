@@ -77,7 +77,8 @@ export default function Home() {
           <p className="text-sm font-bold uppercase tracking-[0.24em] text-cyan-300">MRBD Web App</p>
           <h1 className="mt-2 text-3xl font-black leading-tight">__MRBD_APP_TITLE__</h1>
           <p className="mt-2 text-base text-zinc-300">
-            Built for a fixed 600 x 600 display, dark additive backgrounds, and Arrow key plus Enter navigation.
+            Built for a fixed 600 x 600 display, dark additive backgrounds, and Arrow key plus Enter navigation. Run{" "}
+            <code className="text-cyan-200">npm run mrbd:start</code> to tunnel this app for glasses testing.
           </p>
         </section>
 
