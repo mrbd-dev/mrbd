@@ -1,6 +1,7 @@
 {
   "name": "@mrbd/auth",
   "version": "0.1.0",
+  "private": true,
   "description": "Client helpers for adding MRBD-hosted auth to Meta Ray-Ban Display web apps.",
   "type": "module",
   "license": "MIT",

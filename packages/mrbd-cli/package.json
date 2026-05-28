@@ -1,6 +1,6 @@
 {
   "name": "mrbd-cli",
-  "version": "0.2.1",
+  "version": "0.2.0",
   "description": "Command-line tools for developing Meta Ray-Ban Display web apps.",
   "type": "module",
   "license": "MIT",
