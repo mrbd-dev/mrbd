@@ -213,7 +213,6 @@ function parseStartOptions(args: string[]): StartOptions {
       index += 1;
       continue;
     }
-
     throw new Error(`Unknown option: ${arg}`);
   }
 
