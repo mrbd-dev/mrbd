@@ -1,5 +1,11 @@
 # create-mrbd-app
 
+## 0.2.1
+
+### Patch Changes
+
+- 66ab400: Include `mrbd-cli` in the Next.js starter template with an `mrbd:start` script, updated docs, and tunnel-first glasses testing instructions.
+
 ## 0.2.0
 
 ### Minor Changes
