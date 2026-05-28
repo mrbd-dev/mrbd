@@ -1,5 +1,11 @@
 # create-mrbd-app
 
+## 0.4.0
+
+### Minor Changes
+
+- Replace DaisyUI with shadcn/ui in the starter template. The scaffold now ships a shadcn/ui setup (`components.json`, `lib/utils` `cn()` helper, `Button` and `Card` components, CSS-variable theme tokens, and `tailwindcss-animate`) instead of DaisyUI, while keeping the `@mrbd/*` D-pad components for glasses navigation.
+
 ## 0.3.0
 
 ### Minor Changes

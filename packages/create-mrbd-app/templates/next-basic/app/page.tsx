@@ -5,6 +5,8 @@ import { MrbdButton, MrbdViewport, useDpadNavigation } from "@mrbd/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { Card, CardContent } from "@/components/ui/card";
+
 type SensorStatus = {
   heading: string;
   tilt: string;
@@ -108,9 +110,11 @@ export default function Home() {
 
 function StatusCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[24px] border border-white/10 bg-[#1C1E21] p-4">
-      <p className="text-sm font-bold uppercase tracking-[0.16em] text-zinc-400">{label}</p>
-      <p className="mt-3 text-xl font-black text-white">{value}</p>
-    </div>
+    <Card className="rounded-[24px] border-white/10 bg-[#1C1E21]">
+      <CardContent className="p-4">
+        <p className="text-sm font-bold uppercase tracking-[0.16em] text-zinc-400">{label}</p>
+        <p className="mt-3 text-xl font-black text-white">{value}</p>
+      </CardContent>
+    </Card>
   );
 }

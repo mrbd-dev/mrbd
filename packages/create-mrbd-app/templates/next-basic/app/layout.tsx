@@ -21,8 +21,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" data-theme="black">
-      <body>{children}</body>
+    <html lang="en" className="dark">
+      <body className="bg-background text-foreground">{children}</body>
     </html>
   );
 }

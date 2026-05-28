@@ -8,4 +8,4 @@ This package is unofficial community tooling. It is not affiliated with, endorse
 npm create mrbd-app@latest
 ```
 
-The generated starter uses Next.js, TypeScript, Tailwind CSS, DaisyUI, `@mrbd/core`, `@mrbd/react`, and `mrbd-cli` with an `mrbd:start` script for local glasses testing over a hosted HTTPS tunnel.
+The generated starter uses Next.js, TypeScript, Tailwind CSS, shadcn/ui, `@mrbd/core`, `@mrbd/react`, and `mrbd-cli` with an `mrbd:start` script for local glasses testing over a hosted HTTPS tunnel.

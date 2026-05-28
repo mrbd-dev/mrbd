@@ -1,6 +1,6 @@
 # __MRBD_APP_TITLE__
 
-A Meta Ray-Ban Display web app built with Next.js, Tailwind CSS, DaisyUI, `@mrbd/core`, `@mrbd/react`, and `@mrbd/auth`.
+A Meta Ray-Ban Display web app built with Next.js, Tailwind CSS, shadcn/ui, `@mrbd/core`, `@mrbd/react`, and `@mrbd/auth`.
 
 ## Develop
 

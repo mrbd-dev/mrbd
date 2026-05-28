@@ -17,7 +17,7 @@ The two work together — same target hardware, same constraints, different star
 | --- | --- |
 | You want a single-file vanilla JS prototype. | You want a typed React component and hook library. |
 | You're driving the build entirely from an AI chat skill. | You want stable npm packages, semver, and a CLI. |
-| You don't need a build step. | You want Next.js, Tailwind, DaisyUI, or your own framework. |
+| You don't need a build step. | You want Next.js, Tailwind, shadcn/ui, or your own framework. |
 | You're following Meta's skills for `add-ui`, `add-device-sensors`, etc. | You want `MrbdViewport`, `MrbdButton`, `useDpadNavigation`, and helpers. |
 
 You can use both. Their plugin's skills run in the AI tool; our packages are normal npm dependencies.
