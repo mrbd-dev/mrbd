@@ -1,5 +1,11 @@
 # create-mrbd-app
 
+## 0.3.0
+
+### Minor Changes
+
+- 670063b: Scaffold authentication into the starter: include `@mrbd/auth`, add an opt-in `/sign-in` example wired with `MrbdAuthProvider` and `MrbdAuthGate` (reachable from the home screen), and inject an app ID placeholder.
+
 ## 0.2.1
 
 ### Patch Changes
