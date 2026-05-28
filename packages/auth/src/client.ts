@@ -22,7 +22,7 @@ import type {
   VerifyOtpResponse,
 } from "./types.js";
 
-const defaultAuthUrl = "https://auth.mrbd.dev";
+const defaultAuthUrl = "https://auth.mrbd.io";
 
 type ActiveAuthRequest = MrbdAuthRequest & {
   deviceSecret: string;
