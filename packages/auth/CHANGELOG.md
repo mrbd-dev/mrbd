@@ -1,5 +1,11 @@
 # @mrbd/auth
 
+## 0.2.1
+
+### Patch Changes
+
+- 947a4ff: Point the default auth host at https://auth.mrbd.io.
+
 ## 0.2.0
 
 ### Minor Changes
