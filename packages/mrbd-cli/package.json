@@ -1,0 +1,51 @@
+{
+  "name": "mrbd-cli",
+  "version": "0.2.0",
+  "description": "Command-line tools for developing Meta Ray-Ban Display web apps.",
+  "type": "module",
+  "license": "MIT",
+  "author": "mrbd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrbd-dev/mrbd.git",
+    "directory": "packages/mrbd-cli"
+  },
+  "homepage": "https://github.com/mrbd-dev/mrbd#readme",
+  "bugs": {
+    "url": "https://github.com/mrbd-dev/mrbd/issues"
+  },
+  "keywords": [
+    "mrbd",
+    "mrbd-cli",
+    "meta-ray-ban-display",
+    "cli",
+    "tunnel",
+    "wearables"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "mrbd": "dist/cli.js",
+    "mrbd-cli": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "extract-zip": "^2.0.1",
+    "qrcode-terminal": "^0.12.0",
+    "tar": "^7.5.15"
+  },
+  "devDependencies": {
+    "@types/qrcode-terminal": "^0.12.2"
+  },
+  "engines": {
+    "node": ">=18.18"
+  }
+}

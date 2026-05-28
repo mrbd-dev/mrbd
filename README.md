@@ -10,6 +10,8 @@ This is unofficial community tooling. It is not affiliated with, endorsed by, sp
 
 - `@mrbd/core` - framework-agnostic constants and browser helpers for D-pad input, sensors, location, and storage.
 - `@mrbd/react` - React components and hooks for 600 x 600 MRBD apps.
+- `@mrbd/auth` - client helpers for adding MRBD-hosted auth flows to glasses apps.
+- `mrbd-cli` - command-line tools for local device testing with hosted HTTPS tunnels.
 - `create-mrbd-app` - CLI for scaffolding a Next.js MRBD web app.
 
 ## Develop
@@ -40,3 +42,11 @@ npm create mrbd-app@latest
 ```
 
 The starter is built around the core MRBD constraints: fixed 600 x 600 viewport, dark additive display UI, Arrow key and Enter navigation, explicit permission requests for sensors and location, and PNG web app icons.
+
+## Test On Glasses
+
+```bash
+npx mrbd-cli start
+```
+
+The tunnel command exposes a local app through a short-lived public HTTPS URL and prints a QR code for device setup.

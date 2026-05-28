@@ -74,13 +74,22 @@ a {
 }
 
 .docs-brand {
+  align-items: center;
   color: var(--fg);
-  display: block;
+  display: inline-flex;
   font-size: 13px;
+  gap: 10px;
   letter-spacing: 0.12em;
   margin-bottom: 0;
   text-decoration: none;
   text-transform: uppercase;
+}
+
+.docs-brand img,
+.brand img {
+  display: block;
+  height: 28px;
+  width: 28px;
 }
 
 .docs-sidebar nav {
@@ -153,6 +162,12 @@ a {
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+}
+
+.brand {
+  align-items: center;
+  display: inline-flex;
+  gap: 10px;
 }
 
 .nav a {

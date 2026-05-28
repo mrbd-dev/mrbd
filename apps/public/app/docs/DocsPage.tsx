@@ -12,7 +12,8 @@ export function DocsPage({ page }: { page: DocPage }) {
       <aside className="docs-sidebar">
         <div className="docs-brand-row">
           <a className="docs-brand" href="/">
-            mrbd
+            <img src="/icons/mrbd-192.png" alt="" />
+            <span>MRBD.dev</span>
           </a>
           <GitHubRepoLink className="docs-repo-link" />
         </div>
@@ -33,7 +34,7 @@ export function DocsPage({ page }: { page: DocPage }) {
             <p className="lead">{page.description}</p>
           </div>
           <div className="docs-actions">
-            <CopyMarkdownButton markdown={page.markdown} />
+            <CopyMarkdownButton markdown={page.markdown} slug={page.slug} />
             <a className="plain-link" href={markdownHref}>
               Raw Markdown
             </a>

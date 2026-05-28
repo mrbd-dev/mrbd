@@ -24,6 +24,8 @@ Common options include Vercel, Netlify, Cloudflare Pages, GitHub Pages, or any s
 
 HTTP-only URLs are not supported.
 
+For temporary device testing before deployment, use `mrbd start` to create a short-lived HTTPS tunnel.
+
 ## Device testing
 
 In the Meta AI app with Developer Mode enabled:

@@ -54,10 +54,10 @@ console.log(`Created ${title} in ${targetDir}
 Next steps:
   cd ${appName}
   npm install
-  npm run dev
+  npm run mrbd:start
 
 Test locally with a 600 x 600 browser viewport and Arrow keys + Enter.
-Deploy to a public HTTPS URL before adding it in the Meta AI app.`);
+Use the printed HTTPS URL and QR code to add the app in the Meta AI app.`);
 
 if (install) {
   const { spawn } = await import("node:child_process");

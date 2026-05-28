@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { GitHubRepoLink } from "./components/GitHubRepoLink";
+import posthog from "posthog-js";
 
 const CLI_COMMAND = "npm create mrbd-app@latest";
 
@@ -28,6 +29,7 @@ export default function PublicHome() {
       await navigator.clipboard.writeText(CLI_COMMAND);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
+      posthog.capture("cli_command_copied", { command: CLI_COMMAND });
     } catch {
       // ignore
     }
@@ -36,7 +38,10 @@ export default function PublicHome() {
   return (
     <main className="page">
       <nav className="nav">
-        <span>mrbd</span>
+        <span className="brand">
+          <img src="/icons/mrbd-192.png" alt="" />
+          <span>MRBD.dev</span>
+        </span>
         <div>
           <a href="#packages">Packages</a>
           <a href="/docs">Docs</a>
@@ -59,7 +64,7 @@ export default function PublicHome() {
         </div>
 
         <div className="links">
-          <a href="/docs">Read the docs</a>
+          <a href="/docs" onClick={() => posthog.capture("docs_link_clicked", { source: "hero" })}>Read the docs</a>
           <a href="#packages">View packages</a>
         </div>
       </section>
