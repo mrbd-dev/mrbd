@@ -2,6 +2,7 @@
 
 import { getCurrentMrbdPosition, requestAndStartMrbdSensors, type MrbdSensorSession } from "@mrbd/core";
 import { MrbdButton, MrbdViewport, useDpadNavigation } from "@mrbd/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 type SensorStatus = {
@@ -18,6 +19,7 @@ const initialSensorStatus: SensorStatus = {
 
 export default function Home() {
   useDpadNavigation();
+  const router = useRouter();
 
   const sensorSession = useRef<Extract<MrbdSensorSession, { ok: true }> | null>(null);
   const [sensorStatus, setSensorStatus] = useState(initialSensorStatus);
@@ -94,6 +96,9 @@ export default function Home() {
           <MrbdButton onClick={stopSensors}>Stop Sensors</MrbdButton>
           <MrbdButton className="col-span-2" onClick={requestLocation}>
             Request Location
+          </MrbdButton>
+          <MrbdButton className="col-span-2" onClick={() => router.push("/sign-in")}>
+            Sign In Demo
           </MrbdButton>
         </nav>
       </main>

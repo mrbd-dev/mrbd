@@ -64,6 +64,28 @@ const session = await auth.signInWithCode({
 });
 ```
 
+## React
+
+`@mrbd/auth/react` provides ready-made components for React apps (React 18+):
+
+```tsx
+import { MrbdAuthProvider, MrbdAuthGate, useMrbdAuth } from "@mrbd/auth/react";
+
+<MrbdAuthProvider appId="com.example.my-app">
+  <MrbdAuthGate>
+    <SignedInApp />
+  </MrbdAuthGate>
+</MrbdAuthProvider>;
+```
+
+- `MrbdAuthProvider` creates and shares the client and tracks session state.
+- `MrbdAuthGate` shows the built-in `MrbdSignInScreen` when signed out and renders its children when signed in.
+- `MrbdSignInScreen` displays the verification URL and code, then collects the email OTP.
+- `MrbdOtpNumpad` is a 600x600, D-pad-navigable numeric pad used by the sign-in screen.
+- `useMrbdAuth()` exposes `{ client, session, status, refresh, signOut }`.
+
+`create-mrbd-app` scaffolds a working `app/sign-in/page.tsx` using these components.
+
 ## Sessions
 
 - `getSession()` reads the stored session.

@@ -1,6 +1,6 @@
 # __MRBD_APP_TITLE__
 
-A Meta Ray-Ban Display web app built with Next.js, Tailwind CSS, DaisyUI, `@mrbd/core`, and `@mrbd/react`.
+A Meta Ray-Ban Display web app built with Next.js, Tailwind CSS, DaisyUI, `@mrbd/core`, `@mrbd/react`, and `@mrbd/auth`.
 
 ## Develop
 
@@ -27,3 +27,22 @@ The command starts `npm run dev` when needed, prints a `https://<slug>.mrbd.host
 4. Connect and launch from the glasses app grid
 
 Stop the tunnel with `Ctrl+C`. You can also run `npx mrbd-cli start --help` for more options.
+
+## Authentication
+
+This project includes `@mrbd/auth` and a ready-made sign-in example at `app/sign-in/page.tsx` (reachable from the **Sign In Demo** button on the home screen). It uses the MRBD-hosted device-pairing flow: the glasses show a short code, the user enters it and their email on their phone at `mrbd.link`, and the glasses receive their own session.
+
+To enable it for your app:
+
+1. Register your app at [mrbd.dev/portal/apps/new](https://mrbd.dev/portal/apps/new). Add the origin(s) your app is served from (your tunnel/production URL) to the allow-list.
+2. Replace `MRBD_APP_ID` in `app/sign-in/page.tsx` with the app ID you registered.
+
+```tsx
+import { MrbdAuthProvider, MrbdAuthGate } from "@mrbd/auth/react";
+
+<MrbdAuthProvider appId="com.example.your-app">
+  <MrbdAuthGate>
+    <YourSignedInApp />
+  </MrbdAuthGate>
+</MrbdAuthProvider>;
+```

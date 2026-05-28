@@ -53,6 +53,31 @@ const session = await auth.signInWithCode({
 });
 ```
 
+## React
+
+`@mrbd/auth/react` ships drop-in components for React apps (React 18+ peer dependency). Wrap your app in `MrbdAuthProvider` and gate protected UI with `MrbdAuthGate`:
+
+```tsx
+import { MrbdAuthProvider, MrbdAuthGate, useMrbdAuth } from "@mrbd/auth/react";
+
+function App() {
+  return (
+    <MrbdAuthProvider appId="com.example.my-app">
+      <MrbdAuthGate>
+        <SignedInApp />
+      </MrbdAuthGate>
+    </MrbdAuthProvider>
+  );
+}
+
+function SignedInApp() {
+  const { session, signOut } = useMrbdAuth();
+  return <button onClick={() => void signOut()}>Sign out {session?.userId}</button>;
+}
+```
+
+`MrbdAuthGate` renders the built-in `MrbdSignInScreen` when signed out. That screen shows the verification URL and code, then collects the email OTP with the 600x600, D-pad-navigable `MrbdOtpNumpad`. All three (`MrbdSignInScreen`, `MrbdOtpNumpad`, `MrbdAuthGate`) can also be used directly, and `useMrbdAuth()` exposes the underlying client for custom flows.
+
 ## Sessions
 
 By default, sessions are stored in `localStorage` under an app-specific key. Pass `storage: null` to disable persistence or provide a custom storage object for tests.

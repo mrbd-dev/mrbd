@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mrbd/auth": "latest",
     "@mrbd/core": "latest",
     "@mrbd/react": "latest",
     "next": "latest",

@@ -1,7 +1,6 @@
 {
   "name": "@mrbd/auth",
   "version": "0.1.0",
-  "private": true,
   "description": "Client helpers for adding MRBD-hosted auth to Meta Ray-Ban Display web apps.",
   "type": "module",
   "license": "MIT",
@@ -30,6 +29,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
     }
   },
   "files": [
@@ -39,5 +42,16 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "react": "^19.2.0"
   }
 }

@@ -39,6 +39,7 @@ if (!appName) {
 const targetDir = resolve(process.cwd(), appName);
 const packageName = toPackageName(appName);
 const title = toTitle(appName);
+const appId = `com.example.${packageName}`;
 
 if (!force && (await exists(targetDir))) {
   console.error(`Target directory already exists: ${targetDir}`);
@@ -49,6 +50,7 @@ if (!force && (await exists(targetDir))) {
 await copyTemplate(TEMPLATE_DIR, targetDir, {
   "__MRBD_APP_NAME__": packageName,
   "__MRBD_APP_TITLE__": title,
+  "__MRBD_APP_ID__": appId,
 });
 
 console.log(`Created ${title} in ${targetDir}
