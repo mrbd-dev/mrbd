@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 
 export type MrbdOtpNumpadProps = {
   /** Number of digits to collect before auto-submitting. Defaults to 6. */
@@ -12,6 +12,7 @@ export type MrbdOtpNumpadProps = {
 };
 
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "0", "del"] as const;
+const COLUMNS = 3;
 
 /**
  * A 600x600-friendly, D-pad / keyboard navigable numeric pad for entering an
@@ -19,6 +20,7 @@ const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "0", "del"] 
  */
 export function MrbdOtpNumpad({ length = 6, onSubmit, disabled = false, className, style }: MrbdOtpNumpadProps) {
   const [code, setCode] = useState("");
+  const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
 
   useEffect(() => {
     if (code.length === length) {
@@ -52,6 +54,43 @@ export function MrbdOtpNumpad({ length = 6, onSubmit, disabled = false, classNam
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [disabled, press]);
+
+  // The grid is laid out in rows of `COLUMNS`, so Up/Down should jump a whole
+  // row instead of falling back to the app-level linear D-pad nav (which treats
+  // every arrow as left/right). We intercept arrows in the capture phase so we
+  // run before — and can suppress — the global D-pad handler that listens on
+  // the document during the bubble phase.
+  useEffect(() => {
+    const deltas: Record<string, number> = {
+      ArrowUp: -COLUMNS,
+      ArrowDown: COLUMNS,
+      ArrowLeft: -1,
+      ArrowRight: 1,
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (disabled) return;
+      const delta = deltas[event.key];
+      if (delta === undefined) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      const current = buttonsRef.current.indexOf(
+        document.activeElement as HTMLButtonElement,
+      );
+      if (current === -1) {
+        buttonsRef.current[0]?.focus();
+        return;
+      }
+      const next = current + delta;
+      if (next < 0 || next >= KEYS.length) return;
+      buttonsRef.current[next]?.focus();
+    };
+
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => document.removeEventListener("keydown", onKeyDown, true);
+  }, [disabled]);
 
   return (
     <div className={className} style={{ display: "flex", flexDirection: "column", gap: 16, ...style }}>
@@ -87,13 +126,16 @@ export function MrbdOtpNumpad({ length = 6, onSubmit, disabled = false, classNam
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
+          gridTemplateColumns: `repeat(${COLUMNS}, 1fr)`,
           gap: 12,
         }}
       >
-        {KEYS.map((key) => (
+        {KEYS.map((key, index) => (
           <button
             key={key}
+            ref={(node) => {
+              buttonsRef.current[index] = node;
+            }}
             type="button"
             className="mrbd-focusable"
             disabled={disabled}
