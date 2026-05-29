@@ -100,3 +100,15 @@ By default, sessions are stored in `localStorage` under an app-specific key. Pas
 The public package never talks directly to Supabase. It calls the private MRBD auth backend, which owns pairing, email OTP, Supabase integration, app registration, token exchange, rate limits, and audit logs.
 
 Realtime pairing events are used for flow status and email handoff. Sensitive session credentials are fetched over HTTPS, not delivered over WebSocket or SSE.
+
+## Legal requirements for your app
+
+Because MRBD authenticates real people on your behalf, you have obligations to your end users. When you accept the MRBD Developer Terms in the portal, you also agree to the Privacy Policy and Data Processing Addendum, under which **you are the data controller** for your end users and **MRBD is your processor** for managed authentication.
+
+What this means in practice:
+
+- **A privacy policy is required.** When you register an app in the [developer portal](https://mrbd.io/portal/apps/new), you must either provide your own privacy policy URL or let MRBD host a generated one for your app. The pairing screen shows end users a link to your privacy policy (and MRBD's) before they submit their email.
+- **A terms of service is optional.** Provide your own URL or opt into an MRBD-hosted generated version.
+- **Keep your details accurate.** The publisher name and legal contact email you register are used to fill any MRBD-generated documents and are surfaced to end users for data requests.
+
+MRBD-hosted documents live at `https://mrbd.io/legal/app/<app-id>/privacy` (and `/terms`). MRBD's own policies are at [mrbd.io/legal](https://mrbd.io/legal).
