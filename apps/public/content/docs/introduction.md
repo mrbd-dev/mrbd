@@ -7,14 +7,17 @@ order: 1
 
 MRBD is an unofficial package set for building web applications that target Meta Ray-Ban Display glasses.
 
-The project has four parts:
+The project has five parts:
 
 - `@mrbd/core` provides framework-agnostic constants and browser helpers.
 - `@mrbd/react` provides React components and hooks.
+- `@mrbd/auth` adds a glasses-owned sign-in flow through MRBD-hosted auth, with optional React components.
 - `mrbd-cli` exposes a local dev server through a hosted HTTPS tunnel for glasses testing.
 - `create-mrbd-app` scaffolds a Next.js starter app with MRBD-safe defaults and wires in `mrbd-cli` via `npm run mrbd:start`.
 
 Use these packages when you want reusable code for fixed-size wearable display apps instead of copying platform glue into every project.
+
+When you are ready to try an app on glasses, [Tunnel Testing](/docs/tunnel-testing) exposes your local dev server through a short-lived public HTTPS URL with no deploy. To sign users in, [`@mrbd/auth`](/docs/api-auth) runs an OTP flow that the glasses browser owns directly.
 
 ## Core constraints
 

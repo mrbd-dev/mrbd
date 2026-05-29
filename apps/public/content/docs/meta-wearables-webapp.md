@@ -1,7 +1,7 @@
 ---
 title: Meta's Official Plugin
 description: "Use the Meta wearables webapp plugin alongside the MRBD packages."
-order: 13
+order: 15
 ---
 # Using With Meta's Official Plugin
 

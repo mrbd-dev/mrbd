@@ -46,3 +46,13 @@ npm install @mrbd/core
 ```
 
 `@mrbd/core` is safe to import during server rendering. It checks for browser APIs when helpers are called.
+
+## Add sign-in
+
+To let users sign in from the glasses, add `@mrbd/auth`:
+
+```bash
+npm install @mrbd/auth
+```
+
+It runs a glasses-owned OTP flow through MRBD-hosted auth and ships React components for the sign-in screen. See [API: @mrbd/auth](/docs/api-auth) for the full flow.
