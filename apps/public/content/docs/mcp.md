@@ -1,7 +1,7 @@
 ---
 title: MCP Server
 description: "Use the MRBD docs as a Model Context Protocol server in Cursor, Claude Code, Codex, and other MCP clients."
-order: 15
+order: 17
 ---
 # MCP Server
 

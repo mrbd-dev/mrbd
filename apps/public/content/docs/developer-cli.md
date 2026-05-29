@@ -1,7 +1,7 @@
 ---
 title: Developer Account (CLI)
 description: "Sign in to your developer account and create or edit auth apps from the command line."
-order: 14
+order: 16
 ---
 # Developer Account (CLI)
 
