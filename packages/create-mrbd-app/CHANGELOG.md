@@ -1,5 +1,11 @@
 # create-mrbd-app
 
+## 0.4.1
+
+### Patch Changes
+
+- 5abdcf2: Document the developer-account CLI in the scaffolded `AGENTS.md`: how to register and edit auth apps with `mrbd login` and `mrbd apps` instead of (or alongside) the web portal.
+
 ## 0.4.0
 
 ### Minor Changes
