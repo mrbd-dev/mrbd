@@ -113,6 +113,7 @@ export type MrbdAuthStateCallback = (session: MrbdSession | null) => void;
 
 export type MrbdAuthErrorCode =
   | "invalid_config"
+  | "invalid_session"
   | "browser_api_unavailable"
   | "request_unavailable"
   | "email_unavailable"
