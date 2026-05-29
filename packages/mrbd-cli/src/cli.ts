@@ -11,6 +11,8 @@ import { createHash } from "node:crypto";
 import extractZip from "extract-zip";
 import * as tar from "tar";
 import type { ChildProcess } from "node:child_process";
+import { apps } from "./apps.js";
+import { login, logout, whoami } from "./auth.js";
 
 const require = createRequire(import.meta.url);
 const qrcode = require("qrcode-terminal") as typeof import("qrcode-terminal");
@@ -68,6 +70,26 @@ async function main() {
 
   if (command === "start") {
     await start(args.slice(1));
+    return;
+  }
+
+  if (command === "login") {
+    await login(args.slice(1));
+    return;
+  }
+
+  if (command === "logout") {
+    await logout(args.slice(1));
+    return;
+  }
+
+  if (command === "whoami") {
+    await whoami(args.slice(1));
+    return;
+  }
+
+  if (command === "apps") {
+    await apps(args.slice(1));
     return;
   }
 
@@ -629,9 +651,16 @@ function printHelp() {
   console.log(`MRBD command-line tools.
 
 Usage:
-  mrbd start [options]
+  mrbd <command> [options]
 
-Run \`mrbd start --help\` for tunnel options.`);
+Commands:
+  start                 Expose a local app through a hosted tunnel
+  login                 Sign in to your MRBD developer account
+  logout                Sign out of your MRBD developer account
+  whoami                Show the signed-in developer
+  apps                  Manage your MRBD auth apps
+
+Run \`mrbd <command> --help\` for command options.`);
 }
 
 function printStartHelp() {
