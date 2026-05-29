@@ -95,8 +95,31 @@ import { MrbdAuthProvider, MrbdAuthGate, useMrbdAuth } from "@mrbd/auth/react";
 
 By default, sessions are stored in `localStorage` under an app-specific key. Pass `storage: null` to disable persistence.
 
+## Verify sessions on your backend
+
+The session's `accessToken` is an MRBD-signed JWT scoped to your app: its audience (`aud`) is your `appId`, and its subject (`sub`) is the user id. A token minted through another app will not verify against your `appId`, so you can trust it as proof of a signed-in user for *your* app specifically.
+
+Verify it on your server with `@mrbd/auth/server`, which checks the signature against MRBD's published keys (`/.well-known/jwks.json`) and enforces the audience:
+
+```ts
+import { createMrbdTokenVerifier } from "@mrbd/auth/server";
+
+// Create once and reuse so the public keys stay cached.
+const verifier = createMrbdTokenVerifier({ appId: "com.example.my-app" });
+
+// In a request handler:
+const token = request.headers.get("authorization")?.replace(/^Bearer /, "");
+const { userId, email, scope } = await verifier.verify(token);
+```
+
+`verify()` throws an `MrbdAuthError` (code `invalid_session`) when the token is missing, expired, signed by an unknown key, or was issued for a different app. Never trust the `userId`/`appId` fields of the stored session object without verifying the token — those are only labels until the JWT is checked.
+
+The refresh token returned in the session is an opaque, app-bound MRBD token; the underlying Supabase session is never exposed to clients. Refreshing or revoking always goes through the MRBD auth backend.
+
 ## Security model
 
-The public package never talks directly to Supabase. It calls the private MRBD auth backend, which owns pairing, email OTP, Supabase integration, app registration, token exchange, rate limits, and audit logs.
+The public package never talks directly to Supabase. It calls the private MRBD auth backend, which owns pairing, email OTP, Supabase integration, app registration, token issuance, rate limits, and audit logs.
+
+Access tokens are app-scoped JWTs signed by MRBD (audience = your `appId`); the backend never returns raw Supabase tokens to clients. Each registered app must declare its allowed origins, and the backend rejects auth flows from any other origin.
 
 Realtime pairing events are used for flow status and email handoff. Sensitive session credentials are fetched over HTTPS, not delivered over WebSocket or SSE.
