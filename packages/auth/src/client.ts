@@ -52,15 +52,21 @@ export class MrbdAuthClient {
 
     this.appId = config.appId;
     this.authUrl = normalizeAuthUrl(config.authUrl ?? defaultAuthUrl);
-    this.fetcher = config.fetch ?? globalThis.fetch;
+
+    // The global `fetch` is brand-checked against the global object. Calling it as
+    // `this.fetcher(...)` would invoke it with `this` set to this client instance,
+    // which browsers reject with a synchronous "Illegal invocation" TypeError (no
+    // request is ever dispatched). Bind the global fallback to the global object.
+    const resolvedFetch = config.fetch ?? globalThis.fetch?.bind(globalThis);
+    if (!resolvedFetch) {
+      throw new MrbdAuthError("browser_api_unavailable", "MRBD auth requires fetch.");
+    }
+    this.fetcher = resolvedFetch;
+
     this.storage = config.storage === undefined ? getDefaultAuthStorage() : config.storage;
     this.storageKey = config.storageKey ?? `${DEFAULT_MRBD_AUTH_STORAGE_KEY}:${this.appId}`;
     this.EventSourceCtor = config.eventSource ?? globalThis.EventSource;
     this.WebSocketCtor = config.webSocket ?? globalThis.WebSocket;
-
-    if (!this.fetcher) {
-      throw new MrbdAuthError("browser_api_unavailable", "MRBD auth requires fetch.");
-    }
   }
 
   async startSignIn(options: StartSignInOptions = {}): Promise<MrbdAuthRequest> {
