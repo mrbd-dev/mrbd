@@ -25,6 +25,8 @@ const auth = createMrbdAuth({
 
 `appId` identifies the registered MRBD app. The private MRBD auth backend validates this ID, allowed origins, rate limits, pairing state, and Supabase auth integration.
 
+Register an app (and add the origins it is served from) in the [developer portal](https://mrbd.dev/portal) or from the command line with `mrbd apps create` — see [Developer Account (CLI)](/docs/developer-cli).
+
 ## Start sign-in
 
 ```ts
