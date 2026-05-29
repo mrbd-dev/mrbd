@@ -1,0 +1,35 @@
+---
+description: How to version and publish the npm packages in this repo (changesets + GitHub Release workflow). Use whenever asked to bump, release, or publish a package (e.g. @mrbd/auth, create-mrbd-app).
+alwaysApply: false
+---
+
+# Publishing packages (changesets + CI)
+
+Releases are **automated via changesets and the `Release` GitHub Action** (`.github/workflows/release.yml`). Contributors only add a changeset — **never** run `changeset version` or `npm publish` locally.
+
+## To ship a change to a package
+
+1. Make the code change on a branch.
+2. Add a changeset describing it:
+
+```bash
+npm run changeset   # pick package(s) + bump type, write a summary
+```
+
+This creates a `.changeset/<name>.md` file. Commit it **with** the code change.
+
+3. Open a PR to `main`. CI runs build + typecheck.
+4. Merge to `main`. The Release Action (`changesets/action`) opens a **"Version Packages" PR** that consumes the changesets, bumps versions, and updates `CHANGELOG.md`.
+5. Merge the "Version Packages" PR. The Action then runs `publish-packages` and publishes to npm.
+
+## Do NOT
+
+- ❌ Run `npm run version-packages` / `changeset version` locally to cut a release — let the Action do it (avoids version drift vs. npm).
+- ❌ Run `npm publish` locally. Publishing uses **npm trusted publishing (OIDC, `NPM_CONFIG_PROVENANCE`)** in CI, so there is no npm token locally and an interactive publish will fail with `EOTP` (2FA).
+- ❌ Hand-edit a package `version` in `package.json` or hand-write `CHANGELOG.md` entries — changesets generates both.
+
+## Notes
+
+- If local `package.json` versions look behind npm, the submodule is probably behind `origin/main` (the bot's "Version Packages" merge). Run `git fetch && git status` before assuming drift.
+- Changeset config lives in `.changeset/config.json` (access: public, baseBranch: main).
+- Scripts: `changeset` (add), `version-packages` (`changeset version`), `publish-packages` (`changeset publish`) — the latter two are for CI.
