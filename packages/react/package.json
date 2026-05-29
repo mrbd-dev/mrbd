@@ -1,6 +1,6 @@
 {
   "name": "@mrbd/react",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "React components and hooks for Meta Ray-Ban Display web apps.",
   "type": "module",
   "license": "MIT",
@@ -41,7 +41,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@mrbd/core": "0.2.0"
+    "@mrbd/core": "0.3.0"
   },
   "peerDependencies": {
     "react": ">=18"
