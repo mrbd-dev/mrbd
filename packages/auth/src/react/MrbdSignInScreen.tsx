@@ -110,7 +110,7 @@ export function MrbdSignInScreen({ onSignedIn, otpLength = 6, title, className, 
           <p style={hintStyle}>On your phone, open</p>
           <p style={urlStyle}>{displayUrl(request.verificationUrl)}</p>
           <p style={hintStyle}>and enter this code:</p>
-          <p style={codeStyle}>{request.userCode}</p>
+          <p style={codeStyle}>{formatUserCode(request.userCode)}</p>
           <p style={subtleStyle}>Then type your email on your phone. The rest happens here.</p>
         </div>
       )}
@@ -142,6 +142,11 @@ export function MrbdSignInScreen({ onSignedIn, otpLength = 6, title, className, 
 
 function displayUrl(url: string): string {
   return url.replace(/^https?:\/\//, "");
+}
+
+/** Group the code into dash-separated chunks of 3, matching mrbd.link (e.g. "A1B-2C3"). */
+function formatUserCode(code: string): string {
+  return code.replace(/(.{3})(?=.)/g, "$1-");
 }
 
 function messageFrom(error: unknown): string {
