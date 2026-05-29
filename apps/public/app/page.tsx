@@ -16,8 +16,16 @@ const packages = [
     body: "React components and hooks for fixed 600x600 layouts and focus navigation.",
   },
   {
+    name: "@mrbd/auth",
+    body: "Glasses-owned sign-in through MRBD-hosted auth, with React components for the OTP flow.",
+  },
+  {
+    name: "mrbd-cli",
+    body: "Exposes your local dev server through a short-lived public HTTPS tunnel for on-glasses testing.",
+  },
+  {
     name: "create-mrbd-app",
-    body: "CLI that scaffolds a Next.js starter with MRBD-safe defaults and mrbd-cli for npm run mrbd:start.",
+    body: "CLI that scaffolds a Next.js starter with MRBD-safe defaults and wires in mrbd-cli for npm run mrbd:start.",
   },
 ];
 
@@ -53,7 +61,8 @@ export default function PublicHome() {
         <h1>npm packages for building web apps on Meta Ray-Ban Display glasses.</h1>
         <p className="lead">
           Reusable primitives, hooks, and a CLI for fixed 600x600 viewports, D-pad navigation, sensors, and
-          location.
+          location. Add glasses-owned sign-in with <code>@mrbd/auth</code> and test on device through a public
+          HTTPS tunnel with <code>mrbd start</code>.
         </p>
 
         <div className="snippet" aria-label="CLI command">
