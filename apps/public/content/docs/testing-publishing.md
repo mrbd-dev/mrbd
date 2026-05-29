@@ -1,7 +1,7 @@
 ---
 title: Testing And Publishing
 description: "Verify apps locally, deploy to HTTPS, and add them to the glasses."
-order: 12
+order: 14
 ---
 # Testing And Publishing
 

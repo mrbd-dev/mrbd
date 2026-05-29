@@ -44,6 +44,7 @@ export class MrbdAuthClient {
   private activeRequest: ActiveAuthRequest | null = null;
   private eventConnection: EventConnection | null = null;
   private stateCallbacks = new Set<MrbdAuthStateCallback>();
+  private pendingEmailLogin: string | null = null;
 
   constructor(config: MrbdAuthConfig) {
     if (!config.appId.trim()) {
@@ -165,6 +166,50 @@ export class MrbdAuthClient {
     this.storeSession(response.session);
     this.updateActiveRequest({ status: "verified" });
     this.closeEventConnection();
+
+    return response.session;
+  }
+
+  /**
+   * Direct email-OTP sign-in for keyboard surfaces (e.g. a phone web app).
+   *
+   * Unlike the glasses device-pairing flow ({@link startSignIn}), the surface
+   * has its own keyboard, so it requests the OTP itself with {@link sendEmailOtp}
+   * and completes it with {@link verifyEmailOtp}. The resulting session is bound
+   * to the same `appId` and Supabase user as the glasses, so a user who signs in
+   * on their phone shares one identity (and one set of managed data) with the
+   * glasses app.
+   */
+  async sendEmailOtp(email: string): Promise<void> {
+    const normalized = email.trim().toLowerCase();
+    if (!normalized) {
+      throw new MrbdAuthError("email_unavailable", "An email is required to start sign-in.");
+    }
+
+    await this.request<unknown>("/v1/email/start", {
+      method: "POST",
+      body: { appId: this.appId, email: normalized },
+    });
+
+    this.pendingEmailLogin = normalized;
+  }
+
+  async verifyEmailOtp(token: string, email?: string): Promise<MrbdSession> {
+    const resolvedEmail = (email ?? this.pendingEmailLogin ?? "").trim().toLowerCase();
+    if (!resolvedEmail) {
+      throw new MrbdAuthError(
+        "email_unavailable",
+        "Call sendEmailOtp() before verifyEmailOtp(), or pass the email explicitly.",
+      );
+    }
+
+    const response = await this.request<VerifyOtpResponse>("/v1/email/verify", {
+      method: "POST",
+      body: { appId: this.appId, email: resolvedEmail, token },
+    });
+
+    this.pendingEmailLogin = null;
+    this.storeSession(response.session);
 
     return response.session;
   }
