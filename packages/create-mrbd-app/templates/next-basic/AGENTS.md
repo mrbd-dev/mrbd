@@ -2,6 +2,17 @@
 
 Guidance for AI coding agents working in this repo. This is a **Meta Ray-Ban Display** web app: a Next.js (App Router) + TypeScript + Tailwind + shadcn/ui project that renders on the glasses' built-in browser and is driven by a D-pad (Arrow keys + Enter), not touch.
 
+## Two audiences, one app
+
+The same URL serves two different experiences, chosen on the server per request:
+
+- **On the glasses** — the focused 600x600 D-pad app (`components/glasses-home.tsx`).
+- **On a phone or computer** — an ordinary, responsive, scrollable website (`components/web-home.tsx`).
+
+Detection lives in `lib/mrbd-device.ts`: `isOnMetaRayBanDisplay()` reads the request headers (via `next/headers`) and calls `isMetaRayBanDisplayRequest()` from `@mrbd/core`, which checks the `x-requested-with` header the glasses browser sends. `app/page.tsx` is a Server Component that branches on this, and `app/layout.tsx` only applies the 600x600 lock (the `mrbd-glasses` class + the fixed `viewport`) when the request is from the glasses.
+
+When you add app functionality, decide whether it belongs in the glasses view, the web view, or both. The 600x600 / D-pad rules below apply to the **glasses** experience; the web view is a normal responsive site with no such constraints.
+
 ## The display target (read this first)
 
 The glasses are not a phone. Every UI decision must respect these hard constraints:
@@ -15,12 +26,20 @@ The glasses are not a phone. Every UI decision must respect these hard constrain
 
 ```
 app/
-  layout.tsx        Root layout — sets 600px viewport, dark mode, metadata/manifest
-  page.tsx          Home screen — sensor + location demo, links to /sign-in
-  sign-in/page.tsx  Auth demo using @mrbd/auth (device-pairing flow)
-  globals.css       600x600 lock, dark theme tokens, focus styles
-components/ui/      shadcn/ui primitives (button, card)
-lib/utils.ts        cn() helper (clsx + tailwind-merge)
+  layout.tsx        Root layout — conditional viewport + mrbd-glasses class, metadata/manifest
+  page.tsx          Server entry — renders GlassesHome on glasses, WebHome elsewhere
+  sign-in/page.tsx  Server entry — renders GlassesSignIn on glasses, WebSignIn elsewhere
+  globals.css       glasses-only 600x600 lock, theme tokens, focus styles
+components/
+  glasses-home.tsx  The 600x600 D-pad app (sensor + location demo, links to /sign-in)
+  web-home.tsx      The responsive landing page for phones/computers
+  glasses-sign-in.tsx  Auth demo on glasses (600x600 D-pad pairing flow)
+  web-sign-in.tsx      Auth demo on phone/computer (same flow, responsive layout)
+  ui/               shadcn/ui primitives (button, card)
+lib/
+  mrbd-device.ts    isOnMetaRayBanDisplay() — server-side glasses detection
+  mrbd-app.ts       MRBD_APP_ID — shared app id for both sign-in views
+  utils.ts          cn() helper (clsx + tailwind-merge)
 public/             manifest.webmanifest, icons
 ```
 
@@ -54,7 +73,7 @@ Components that use mrbd hooks/APIs must be Client Components (`"use client"`).
 
 ## Authentication (`@mrbd/auth`)
 
-Auth uses an **MRBD-hosted device-pairing flow** — there is no password form on the glasses. The glasses display a short code; the user enters that code plus their email on their phone at `mrbd.link`; the glasses then receive their own session. The implemented example lives in `app/sign-in/page.tsx`.
+Auth uses an **MRBD-hosted device-pairing flow** — there is no password form on the glasses. The glasses display a short code; the user enters that code plus their email on their phone at `mrbd.link`; the glasses then receive their own session. The `/sign-in` route demos this on both targets: `app/sign-in/page.tsx` is a Server Component that renders `components/glasses-sign-in.tsx` (the 600x600 D-pad version) on the glasses and `components/web-sign-in.tsx` (the same flow in a responsive centered layout) on phones/computers. Both wrap the same `MrbdAuthProvider` and read the shared `MRBD_APP_ID` from `lib/mrbd-app.ts`.
 
 The pattern is provider + gate + hook:
 
@@ -72,7 +91,7 @@ import { MrbdAuthProvider, MrbdAuthGate, useMrbdAuth } from "@mrbd/auth/react";
 - `MrbdAuthGate` — renders the pairing-code UI until the user is signed in, then renders its children.
 - `useMrbdAuth()` — read `session` (e.g. `session.userId`) and call `signOut()` from inside the provider.
 
-**`appId` setup (required for real auth):** the placeholder `MRBD_APP_ID` in `app/sign-in/page.tsx` (`__MRBD_APP_ID__`) is not a registered app. To make sign-in actually work:
+**`appId` setup (required for real auth):** the placeholder `MRBD_APP_ID` in `lib/mrbd-app.ts` (`__MRBD_APP_ID__`) is not a registered app. To make sign-in actually work:
 
 1. Register the app — either at https://mrbd.dev/portal/apps/new, or from the CLI:
 
@@ -104,7 +123,7 @@ npm run lint         # next lint
 
 ### Local testing
 
-Use Chrome DevTools at a **600 x 600** viewport and navigate with Arrow keys + Enter. Do not rely on mouse clicks to validate flows — the device has no pointer.
+In a normal browser you'll see the **web** view (`WebHome`) — that's expected, since `localhost` isn't the glasses browser. To validate the **glasses** view locally, render `GlassesHome` directly (e.g. temporarily), or use `npm run mrbd:start` and open the tunnel on real glasses. Test the glasses experience in Chrome DevTools at a **600 x 600** viewport and navigate with Arrow keys + Enter — do not rely on mouse clicks, the device has no pointer.
 
 ### Testing on real glasses
 
@@ -112,7 +131,7 @@ Use Chrome DevTools at a **600 x 600** viewport and navigate with Arrow keys + E
 
 ### Developer account & auth apps (CLI)
 
-`mrbd-cli` can also sign in to your developer account and manage the auth apps used by `@mrbd/auth` — the same apps shown in the portal. Use this to register the `appId` referenced in `app/sign-in/page.tsx` and to keep its allowed origins up to date.
+`mrbd-cli` can also sign in to your developer account and manage the auth apps used by `@mrbd/auth` — the same apps shown in the portal. Use this to register the `appId` referenced in `lib/mrbd-app.ts` and to keep its allowed origins up to date.
 
 ```bash
 npx mrbd-cli login                 # email OTP; session saved to ~/.mrbd/credentials.json

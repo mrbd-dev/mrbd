@@ -2,6 +2,15 @@
 
 A Meta Ray-Ban Display web app built with Next.js, Tailwind CSS, shadcn/ui, `@mrbd/core`, `@mrbd/react`, and `@mrbd/auth`.
 
+## One URL, two experiences
+
+The same address adapts to who's visiting, decided on the server per request:
+
+- **On Meta Ray-Ban Display glasses** — the focused 600 x 600, D-pad-driven app (`components/glasses-home.tsx`).
+- **On a phone or computer** — a normal, responsive landing page (`components/web-home.tsx`).
+
+The switch happens in `app/page.tsx` using `isOnMetaRayBanDisplay()` (`lib/mrbd-device.ts`), which inspects the request headers the glasses browser sends. So when you share the link, regular visitors get an ordinary website and the glasses get the real app.
+
 ## Develop
 
 ```bash
@@ -9,7 +18,7 @@ npm install
 npm run dev
 ```
 
-Use Chrome DevTools with a 600 x 600 viewport. Navigate with Arrow keys and Enter.
+Visiting `localhost` in a normal browser shows the **web** view. To preview the **glasses** view, use a 600 x 600 viewport in Chrome DevTools (navigate with Arrow keys and Enter) or open the app on real glasses via `npm run mrbd:start`.
 
 ## Test On Glasses
 
@@ -30,12 +39,12 @@ Stop the tunnel with `Ctrl+C`. You can also run `npx mrbd-cli start --help` for 
 
 ## Authentication
 
-This project includes `@mrbd/auth` and a ready-made sign-in example at `app/sign-in/page.tsx` (reachable from the **Sign In Demo** button on the home screen). It uses the MRBD-hosted device-pairing flow: the glasses show a short code, the user enters it and their email on their phone at `mrbd.link`, and the glasses receive their own session.
+This project includes `@mrbd/auth` and a ready-made `/sign-in` demo that adapts to the device just like the home page: the glasses get the 600 x 600 D-pad pairing screen (`components/glasses-sign-in.tsx`) and phones/computers get the same flow in a responsive centered layout (`components/web-sign-in.tsx`). It's reachable from the **Sign In Demo** button on the glasses home and the **Try the sign-in demo** link on the web landing. Either way it uses the MRBD-hosted device-pairing flow: the glasses show a short code, the user enters it and their email on their phone at `mrbd.link`, and the glasses receive their own session.
 
 To enable it for your app:
 
 1. Register your app at [mrbd.dev/portal/apps/new](https://mrbd.dev/portal/apps/new). Add the origin(s) your app is served from (your tunnel/production URL) to the allow-list.
-2. Replace `MRBD_APP_ID` in `app/sign-in/page.tsx` with the app ID you registered.
+2. Replace `MRBD_APP_ID` in `lib/mrbd-app.ts` with the app ID you registered.
 
 ```tsx
 import { MrbdAuthProvider, MrbdAuthGate } from "@mrbd/auth/react";

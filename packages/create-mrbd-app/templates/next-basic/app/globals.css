@@ -57,12 +57,7 @@
 
 html,
 body {
-  width: 600px;
-  height: 600px;
   margin: 0;
-  overflow: hidden;
-  background: #000000;
-  color: #ffffff;
   font-family:
     ui-sans-serif,
     system-ui,
@@ -70,6 +65,21 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+}
+
+/*
+ * Glasses-only layout. The `mrbd-glasses` class is added to <html> by the root
+ * layout when the request comes from the Meta Ray-Ban Display browser. This
+ * locks the page to the fixed 600x600 additive display. Phones and computers
+ * get a normal, scrollable, responsive page instead.
+ */
+html.mrbd-glasses,
+html.mrbd-glasses body {
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: #000000;
+  color: #ffffff;
 }
 
 * {

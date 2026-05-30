@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 
+import { isOnMetaRayBanDisplay } from "@/lib/mrbd-device";
+
 export const metadata: Metadata = {
   title: "__MRBD_APP_TITLE__",
   description: "A Meta Ray-Ban Display web app.",
@@ -12,16 +14,21 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = {
-  width: 600,
-  initialScale: 1,
-  userScalable: false,
-  themeColor: "#000000",
-};
+// On the glasses, lock to the fixed 600x600 display. Everywhere else (phone,
+// laptop) behave like a normal responsive website.
+export async function generateViewport(): Promise<Viewport> {
+  if (await isOnMetaRayBanDisplay()) {
+    return { width: 600, initialScale: 1, userScalable: false, themeColor: "#000000" };
+  }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+  return { width: "device-width", initialScale: 1, themeColor: "#0a0a0f" };
+}
+
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const onGlasses = await isOnMetaRayBanDisplay();
+
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className={onGlasses ? "dark mrbd-glasses" : undefined}>
       <body className="bg-background text-foreground">{children}</body>
     </html>
   );
