@@ -20,6 +20,18 @@ const packages = [
     body: "Glasses-owned sign-in through MRBD-hosted auth, with React components for the OTP flow.",
   },
   {
+    name: "@mrbd/data",
+    body: "Managed, per-user JSON document store with no backend to run.",
+  },
+  {
+    name: "@mrbd/storage",
+    body: "Managed blob storage with signed upload and download URLs.",
+  },
+  {
+    name: "@mrbd/payments",
+    body: "Sell purchases and subscriptions via MRBD's Stripe Connect platform, with a shared wallet and PIN checkout.",
+  },
+  {
     name: "mrbd-cli",
     body: "Exposes your local dev server through a short-lived public HTTPS tunnel for on-glasses testing.",
   },
