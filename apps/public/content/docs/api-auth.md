@@ -66,6 +66,31 @@ const session = await auth.signInWithCode({
 });
 ```
 
+## Direct email sign-in (web and phone)
+
+The flow above is designed for the glasses, which have no keyboard — the phone or computer at `mrbd.link` is only used to type the email. On a surface that *does* have a keyboard (a phone web app, or a desktop companion app), you can skip device pairing entirely and run a straight email-OTP flow:
+
+```ts
+await auth.sendEmailOtp("user@example.com");
+// collect the 6-digit code the user received by email
+const session = await auth.verifyEmailOtp(otp);
+```
+
+`sendEmailOtp(email)` asks MRBD to email a one-time code, and `verifyEmailOtp(token)` exchanges it for a session. The session is bound to the same `appId` and the same MRBD user as the glasses, so a user who signs in on their phone shares one identity (and one set of managed data) with the glasses app. As with the glasses flow, the session belongs to whichever browser completed it; nothing is copied between devices.
+
+Use the glasses pairing flow (`startSignIn` / `signInWithCode`) on the glasses, and the direct email flow (`sendEmailOtp` / `verifyEmailOtp`) on keyboard surfaces.
+
+## Approve a new device from a signed-in one
+
+If a user is already signed in on one device (say their phone), they can sign in a second device (their glasses) without entering a second OTP. The new device starts the normal pairing flow and shows its code; the signed-in device approves that code:
+
+```ts
+// On the already signed-in device (e.g. the phone):
+await auth.approveDevice(userCode); // the code shown on the new device
+```
+
+The new device, which is waiting in `startSignIn`, automatically receives an `approved` event and claims its own session — its own access and refresh tokens, independently revocable. Nothing is copied between devices; the approving device only authorizes the grant with its own access token. The new device still proves possession of the device secret it generated, so the visible code alone can never produce a session.
+
 ## React
 
 `@mrbd/auth/react` provides ready-made components for React apps (React 18+):
@@ -81,12 +106,14 @@ import { MrbdAuthProvider, MrbdAuthGate, useMrbdAuth } from "@mrbd/auth/react";
 ```
 
 - `MrbdAuthProvider` creates and shares the client and tracks session state.
-- `MrbdAuthGate` shows the built-in `MrbdSignInScreen` when signed out and renders its children when signed in.
-- `MrbdSignInScreen` displays the verification URL and code, then collects the email OTP.
-- `MrbdOtpNumpad` is a 600x600, D-pad-navigable numeric pad used by the sign-in screen.
+- `MrbdAuthGate` shows the built-in `MrbdSignInScreen` when signed out and renders its children when signed in. Pass a custom `fallback` to use a different sign-in UI.
+- `MrbdSignInScreen` (glasses) displays the verification URL and code, then collects the email OTP.
+- `MrbdEmailSignInScreen` (web/phone) collects the user's email and the one-time code directly, using the `sendEmailOtp` / `verifyEmailOtp` flow. Use it as the gate `fallback` on keyboard surfaces.
+- `MrbdApproveDeviceScreen` (signed-in surface) collects the code shown on another device and calls `approveDevice` so that device can sign in without its own OTP.
+- `MrbdOtpNumpad` is a 600x600, D-pad-navigable numeric pad used by the sign-in screens.
 - `useMrbdAuth()` exposes `{ client, session, status, refresh, signOut }`.
 
-`create-mrbd-app` scaffolds a working `app/sign-in/page.tsx` using these components.
+`create-mrbd-app` scaffolds a working `app/sign-in/page.tsx` using these components — the glasses view uses `MrbdSignInScreen` and the web view uses `MrbdEmailSignInScreen`.
 
 ## Sessions
 

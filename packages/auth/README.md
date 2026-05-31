@@ -38,6 +38,18 @@ const session = await auth.verifyOtp("123456");
 
 The resulting session belongs to the glasses browser. The phone or computer is only used as a keyboard proxy for email entry.
 
+## Direct email sign-in (web and phone)
+
+On a surface that has its own keyboard (a phone web app or desktop companion), skip device pairing and run a straight email-OTP flow:
+
+```ts
+await auth.sendEmailOtp("user@example.com");
+// collect the 6-digit code the user received by email
+const session = await auth.verifyEmailOtp("123456");
+```
+
+The session is bound to the same `appId` and the same MRBD user as the glasses, so signing in on the phone shares one identity (and one set of managed data) with the glasses app.
+
 ## Convenience flow
 
 Apps that want to orchestrate the default flow can use `signInWithCode()`:
@@ -76,7 +88,7 @@ function SignedInApp() {
 }
 ```
 
-`MrbdAuthGate` renders the built-in `MrbdSignInScreen` when signed out. That screen shows the verification URL and code, then collects the email OTP with the 600x600, D-pad-navigable `MrbdOtpNumpad`. All three (`MrbdSignInScreen`, `MrbdOtpNumpad`, `MrbdAuthGate`) can also be used directly, and `useMrbdAuth()` exposes the underlying client for custom flows.
+`MrbdAuthGate` renders the built-in `MrbdSignInScreen` when signed out. That screen shows the verification URL and code, then collects the email OTP with the 600x600, D-pad-navigable `MrbdOtpNumpad`. On keyboard surfaces (web/phone), pass `MrbdEmailSignInScreen` as the gate's `fallback` to collect the email and code directly. All of these (`MrbdSignInScreen`, `MrbdEmailSignInScreen`, `MrbdOtpNumpad`, `MrbdAuthGate`) can also be used directly, and `useMrbdAuth()` exposes the underlying client for custom flows.
 
 ## Sessions
 

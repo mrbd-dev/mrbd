@@ -1,19 +1,20 @@
 "use client";
 
-import { MrbdAuthGate, MrbdAuthProvider, MrbdSignInScreen, useMrbdAuth } from "@mrbd/auth/react";
+import { MrbdAuthGate, MrbdAuthProvider, MrbdEmailSignInScreen, useMrbdAuth } from "@mrbd/auth/react";
 import Link from "next/link";
 
 import { MRBD_APP_ID } from "@/lib/mrbd-app";
 
-// Sign-in demo as it appears on a phone or computer: the same real MRBD auth
-// flow, laid out as a normal, responsive, centered page instead of the fixed
-// 600x600 glasses frame.
+// Sign-in demo as it appears on a phone or computer. Because this surface has a
+// keyboard, it uses the direct email-OTP flow (MrbdEmailSignInScreen) instead of
+// the glasses device-pairing screen: the user types their email and the one-time
+// code right here. The resulting session shares the same MRBD user as the glasses.
 export function WebSignIn() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-[#0a0a0f] px-6 py-16 text-white">
       <div className="w-full max-w-md">
         <MrbdAuthProvider appId={MRBD_APP_ID}>
-          <MrbdAuthGate fallback={<MrbdSignInScreen className="w-full" />}>
+          <MrbdAuthGate fallback={<MrbdEmailSignInScreen className="w-full" />}>
             <SignedIn />
           </MrbdAuthGate>
         </MrbdAuthProvider>

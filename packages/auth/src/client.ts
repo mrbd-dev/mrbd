@@ -45,6 +45,7 @@ export class MrbdAuthClient {
   private eventConnection: EventConnection | null = null;
   private stateCallbacks = new Set<MrbdAuthStateCallback>();
   private pendingEmailLogin: string | null = null;
+  private claimingSession = false;
 
   constructor(config: MrbdAuthConfig) {
     if (!config.appId.trim()) {
@@ -180,6 +181,60 @@ export class MrbdAuthClient {
    * on their phone shares one identity (and one set of managed data) with the
    * glasses app.
    */
+  /**
+   * Approve another device's pending sign-in from this (already signed-in)
+   * device. Pass the short `userCode` the other device is displaying. The other
+   * device then receives its own session without entering an OTP.
+   *
+   * This device must have a valid session (call from a signed-in surface); its
+   * access token authorizes the approval.
+   */
+  async approveDevice(userCode: string): Promise<void> {
+    const session = await this.getSession();
+    if (!session?.accessToken) {
+      throw new MrbdAuthError(
+        "session_unavailable",
+        "approveDevice() requires a signed-in session on this device.",
+      );
+    }
+
+    const normalized = userCode.replace(/[\s-]/g, "").toUpperCase();
+    if (!normalized) {
+      throw new MrbdAuthError("request_unavailable", "A sign-in code is required to approve.");
+    }
+
+    await this.request<unknown>("/v1/device/approve", {
+      method: "POST",
+      body: { appId: this.appId, userCode: normalized },
+      bearer: session.accessToken,
+    });
+  }
+
+  /**
+   * Redeem an approved pairing for this device's own session. Called
+   * automatically when an `approved` event arrives during {@link startSignIn},
+   * but exposed for apps that drive the flow manually.
+   */
+  async claimSession(): Promise<MrbdSession> {
+    const request = this.requireActiveRequest();
+
+    const response = await this.request<VerifyOtpResponse>("/v1/device/claim-session", {
+      method: "POST",
+      body: {
+        appId: this.appId,
+        requestId: request.requestId,
+        deviceCode: request.deviceCode,
+        deviceSecret: request.deviceSecret,
+      },
+    });
+
+    this.storeSession(response.session);
+    this.updateActiveRequest({ status: "verified" });
+    this.closeEventConnection();
+
+    return response.session;
+  }
+
   async sendEmailOtp(email: string): Promise<void> {
     const normalized = email.trim().toLowerCase();
     if (!normalized) {
@@ -305,6 +360,24 @@ export class MrbdAuthClient {
       }
 
       onEvent?.(event);
+
+      // Device-approval path: another signed-in device approved this pairing.
+      // Redeem our own session without an OTP. Guard against re-entry in case
+      // the event is re-delivered (e.g. via the cross-instance poll).
+      if (event.type === "approved" && !this.claimingSession) {
+        this.claimingSession = true;
+        this.claimSession()
+          .catch((error) => {
+            onEvent?.({
+              type: "error",
+              code: "claim_failed",
+              message: error instanceof Error ? error.message : "Failed to claim session.",
+            });
+          })
+          .finally(() => {
+            this.claimingSession = false;
+          });
+      }
     };
 
     if (stream.type === "sse") {
@@ -357,17 +430,22 @@ export class MrbdAuthClient {
 
   private async request<T>(
     path: string,
-    options: { method: "POST"; body: unknown; ignoreServerErrors?: boolean },
+    options: { method: "POST"; body: unknown; ignoreServerErrors?: boolean; bearer?: string },
   ): Promise<T> {
     let response: Response;
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (options.bearer) {
+      headers.Authorization = `Bearer ${options.bearer}`;
+    }
 
     try {
       response = await this.fetcher(endpoint(this.authUrl, path), {
         method: options.method,
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers,
         body: JSON.stringify(options.body),
       });
     } catch (error) {
