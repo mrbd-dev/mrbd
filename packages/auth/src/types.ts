@@ -34,6 +34,7 @@ export type MrbdAuthRequestStatus =
   | "paired"
   | "email_submitted"
   | "otp_sent"
+  | "approved"
   | "verified"
   | "expired"
   | "error";
@@ -42,6 +43,7 @@ export type MrbdAuthEvent =
   | { type: "paired"; requestId: string }
   | { type: "email_submitted"; requestId: string; email: string }
   | { type: "otp_sent"; requestId: string; email?: string }
+  | { type: "approved"; requestId: string }
   | { type: "verified"; requestId: string }
   | { type: "expired"; requestId: string }
   | { type: "error"; requestId?: string; code: string; message: string };
