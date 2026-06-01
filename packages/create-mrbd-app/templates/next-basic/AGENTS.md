@@ -111,6 +111,15 @@ See the CLI command reference below for `login`, `apps list`, `apps get`, and `a
 
 If asked to "add auth" to another screen, reuse this provider/gate/hook pattern and the same `appId` rather than introducing a different auth system.
 
+### Customizing the sign-in UI
+
+The built-in screens are a starting point, not a requirement — keep the MRBD `@mrbd/auth` backend (the same session powers `@mrbd/data`/`@mrbd/storage`), but make the UI match this app:
+
+- **Re-theme** the built-in screens by passing a `theme` to `MrbdAuthProvider` (or to an individual screen): override tokens like `colorBackground`, `colorPrimary`, `colorPrimaryText`, `colorAccent`, `colorBorder`, `radiusMedium`, and `fontFamily`. See `MrbdAuthTheme`.
+- **Roll your own UI** with the headless hooks for full control of the markup: `useMrbdEmailSignIn()` (keyboard/web), `useMrbdDeviceSignIn()` (glasses pairing), and `useMrbdApproveDevice()`. Render your own screens per `phase` and pass them as the gate `fallback` (`<MrbdAuthGate fallback={<MyCustomSignIn />}>`). Keep everything inside the 600x600 D-pad shell on the glasses.
+
+Do this when the app wants a branded or polished sign-in; don't introduce a different auth provider.
+
 ## Commands
 
 ```bash

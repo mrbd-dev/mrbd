@@ -115,6 +115,94 @@ import { MrbdAuthProvider, MrbdAuthGate, useMrbdAuth } from "@mrbd/auth/react";
 
 `create-mrbd-app` scaffolds a working `app/sign-in/page.tsx` using these components — the glasses view uses `MrbdSignInScreen` and the web view uses `MrbdEmailSignInScreen`.
 
+## Customize the sign-in UI
+
+The built-in screens are a convenience, not a requirement. You own the look of sign-in — there are three levels of control, from quick re-theming to fully custom UI. All of them keep MRBD's hosted identity, so `@mrbd/data` and `@mrbd/storage` keep working with the resulting session.
+
+### 1. Re-theme the built-in screens
+
+Every default screen renders from a small set of design tokens. Override the ones you care about — app-wide on the provider, or per-screen — and the rest fall back to the defaults:
+
+```tsx
+<MrbdAuthProvider
+  appId="com.example.my-app"
+  theme={{
+    colorBackground: "#06070a",
+    colorPrimary: "#ff5c8a",
+    colorPrimaryText: "#0a0a0f",
+    colorAccent: "#ffd166",
+    radiusMedium: 12,
+    fontFamily: "var(--font-sans)",
+  }}
+>
+  <MrbdAuthGate>
+    <SignedInApp />
+  </MrbdAuthGate>
+</MrbdAuthProvider>;
+```
+
+See `MrbdAuthTheme` for the full token list (colors, radii, and `fontFamily`). `defaultMrbdAuthTheme` holds the defaults, and `createMrbdAuthStyles(theme)` / `useMrbdAuthStyles(override?)` expose the resolved styles if you want to reuse them in your own components.
+
+### 2. Swap in your own screen
+
+`MrbdAuthGate` renders `MrbdSignInScreen` when signed out, but you can pass any `fallback`:
+
+```tsx
+<MrbdAuthGate fallback={<MyCustomSignIn />}>
+  <SignedInApp />
+</MrbdAuthGate>;
+```
+
+### 3. Roll your own UI with headless hooks
+
+For full control over the markup, build on the headless hooks. They expose the exact flow state machine behind the built-in screens with no styling, so you render whatever you want and just drive the calls. MRBD still owns the OTP, identity, and tokens.
+
+`useMrbdEmailSignIn()` — keyboard surfaces (phone/desktop web):
+
+```tsx
+"use client";
+import { useMrbdEmailSignIn } from "@mrbd/auth/react";
+import { useState } from "react";
+
+function CustomEmailSignIn() {
+  const { phase, email, error, sendOtp, verifyOtp, resend } = useMrbdEmailSignIn({
+    onSignedIn: (session) => console.log("signed in", session.userId),
+  });
+  const [value, setValue] = useState("");
+
+  if (phase === "otp" || phase === "verifying") {
+    return (
+      <form onSubmit={(e) => { e.preventDefault(); verifyOtp(value); }}>
+        <p>Code sent to {email}</p>
+        <input value={value} onChange={(e) => setValue(e.target.value)} />
+        <button type="submit">Verify</button>
+        <button type="button" onClick={() => resend()}>Resend</button>
+        {error && <p role="alert">{error}</p>}
+      </form>
+    );
+  }
+
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); sendOtp(value); }}>
+      <input type="email" value={value} onChange={(e) => setValue(e.target.value)} />
+      <button type="submit">Send code</button>
+      {error && <p role="alert">{error}</p>}
+    </form>
+  );
+}
+```
+
+`useMrbdDeviceSignIn()` — the glasses pairing flow. It starts automatically (pass `{ autoStart: false }` to defer), exposes `request.verificationUrl` + `request.userCode` to display, sends the OTP on its own once the user submits their email on their phone, and gives you `verifyOtp(code)` for the code the user reads back on the glasses:
+
+```tsx
+const { phase, request, error, verifyOtp } = useMrbdDeviceSignIn();
+// phase: "starting" | "await_email" | "sending_otp" | "otp" | "verifying" | "done" | "error"
+```
+
+`useMrbdApproveDevice()` — the "approve another device" flow for an already-signed-in surface, exposing `{ phase, canApprove, error, approve, reset }`.
+
+If even the hooks are more than you need, drop to the vanilla client (`useMrbdAuth().client`, or `createMrbdAuth()`) and call `startSignIn` / `sendEmailOtp` / `verifyEmailOtp` directly.
+
 ## Sessions
 
 - `getSession()` reads the stored session.

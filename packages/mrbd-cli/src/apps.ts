@@ -12,6 +12,7 @@ type AuthApp = {
   status: string;
   allowed_origins: string[] | null;
   notes: string | null;
+  verification_url: string | null;
   publisher_name: string | null;
   legal_contact_email: string | null;
   privacy_policy_url: string | null;
@@ -244,6 +245,7 @@ async function getApp(args: string[]): Promise<void> {
     ["Environment", app.environment],
     ["Status", app.status],
     ["Allowed origins", (app.allowed_origins ?? []).join(", ") || "(none)"],
+    ["Verification URL", app.verification_url ?? "(default: mrbd.link)"],
     ["Privacy policy", app.privacy_policy_url ?? (app.use_generated_privacy ? "(MRBD-generated)" : "(none)")],
     ["Terms", app.terms_url ?? (app.use_generated_terms ? "(MRBD-generated)" : "(none)")],
     ["Publisher", app.publisher_name ?? "(none)"],
@@ -311,6 +313,11 @@ async function createApp(args: string[]): Promise<void> {
   const publisherName = parsed.values["publisher-name"] ?? null;
   const notes = parsed.values["notes"] ?? null;
 
+  const verificationUrl = parsed.values["verification-url"] ?? null;
+  if (verificationUrl) {
+    assertUrl(verificationUrl, "--verification-url");
+  }
+
   assertLegalInvariant({
     privacyPolicyUrl,
     termsUrl,
@@ -332,6 +339,7 @@ async function createApp(args: string[]): Promise<void> {
     owner_user_id: userId,
     owner_email: email,
     notes,
+    verification_url: verificationUrl,
     publisher_name: publisherName,
     legal_contact_email: legalContactEmail,
     privacy_policy_url: privacyPolicyUrl,
@@ -405,6 +413,13 @@ async function updateApp(args: string[]): Promise<void> {
   }
   if (parsed.values["notes"] !== undefined) {
     patch.notes = parsed.values["notes"] || null;
+  }
+  if (parsed.values["verification-url"] !== undefined) {
+    const value = parsed.values["verification-url"];
+    if (value) {
+      assertUrl(value, "--verification-url");
+    }
+    patch.verification_url = value || null;
   }
   if (parsed.values["privacy-policy-url"] !== undefined) {
     const value = parsed.values["privacy-policy-url"];
@@ -501,6 +516,7 @@ Legal (a privacy policy is required):
 
 Options:
   --env <environment>       development | preview | production (default development)
+  --verification-url <url>  Custom developer-hosted pairing page (default mrbd.link)
   --notes <text>            Internal notes`);
 }
 
@@ -515,6 +531,7 @@ Options:
   --env <environment>         development | preview | production
   --status <status>           active | disabled | revoked
   --origin <url>              Replace allowed origins; repeat for multiple
+  --verification-url <url>    Custom developer-hosted pairing page (default mrbd.link)
   --privacy-policy-url <url>  Link to your privacy policy
   --generate-privacy          Use an MRBD-generated privacy policy
   --no-generate-privacy       Stop using an MRBD-generated privacy policy
