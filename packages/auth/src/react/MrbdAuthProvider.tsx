@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createMrbdAuth, MrbdAuthClient } from "../client.js";
 import type { MrbdAuthConfig, MrbdSession } from "../types.js";
 import { MrbdAuthContext, type MrbdAuthContextValue, type MrbdAuthStatus } from "./context.js";
+import { MrbdAuthThemeProvider, resolveMrbdAuthTheme, type MrbdAuthTheme } from "./theme.js";
 
 export type MrbdAuthProviderProps = Partial<MrbdAuthConfig> & {
   children: ReactNode;
@@ -11,9 +12,19 @@ export type MrbdAuthProviderProps = Partial<MrbdAuthConfig> & {
    * When omitted, the provider builds a client from `appId` / `authUrl` / etc.
    */
   client?: MrbdAuthClient;
+  /**
+   * Override design tokens for every built-in MRBD auth screen rendered below
+   * this provider. Merged over the default theme; omit to keep the defaults.
+   */
+  theme?: Partial<MrbdAuthTheme>;
 };
 
-export function MrbdAuthProvider({ children, client: providedClient, ...config }: MrbdAuthProviderProps) {
+export function MrbdAuthProvider({
+  children,
+  client: providedClient,
+  theme,
+  ...config
+}: MrbdAuthProviderProps) {
   const client = useMemo(() => {
     if (providedClient) return providedClient;
     if (!config.appId) {
@@ -68,5 +79,11 @@ export function MrbdAuthProvider({ children, client: providedClient, ...config }
     [client, session, status],
   );
 
-  return <MrbdAuthContext.Provider value={value}>{children}</MrbdAuthContext.Provider>;
+  const resolvedTheme = useMemo(() => resolveMrbdAuthTheme(theme), [theme]);
+
+  return (
+    <MrbdAuthContext.Provider value={value}>
+      <MrbdAuthThemeProvider value={resolvedTheme}>{children}</MrbdAuthThemeProvider>
+    </MrbdAuthContext.Provider>
+  );
 }

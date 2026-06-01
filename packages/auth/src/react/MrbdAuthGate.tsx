@@ -1,8 +1,9 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import type { MrbdSession } from "../types.js";
 import { useMrbdAuth } from "./context.js";
 import { MrbdSignInScreen } from "./MrbdSignInScreen.js";
+import { useMrbdAuthTheme } from "./theme.js";
 
 export type MrbdAuthGateProps = {
   /** Rendered once a session exists. */
@@ -34,13 +35,20 @@ export function MrbdAuthGate({ children, loading, fallback, onSignedIn }: MrbdAu
 }
 
 function DefaultLoading() {
-  const style: CSSProperties = {
-    display: "grid",
-    placeItems: "center",
-    height: "100%",
-    color: "#d4d4d8",
-    background: "#0a0a0f",
-    fontWeight: 700,
-  };
-  return <div style={style}>Loading…</div>;
+  const theme = useMrbdAuthTheme();
+  return (
+    <div
+      style={{
+        display: "grid",
+        placeItems: "center",
+        height: "100%",
+        color: theme.colorTextMuted,
+        background: theme.colorBackground,
+        fontFamily: theme.fontFamily,
+        fontWeight: 700,
+      }}
+    >
+      Loading…
+    </div>
+  );
 }

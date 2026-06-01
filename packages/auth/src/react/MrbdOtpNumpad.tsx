@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 
+import { useMrbdAuthStyles, type MrbdAuthTheme } from "./theme.js";
+
 export type MrbdOtpNumpadProps = {
   /** Number of digits to collect before auto-submitting. Defaults to 6. */
   length?: number;
@@ -7,6 +9,8 @@ export type MrbdOtpNumpadProps = {
   onSubmit: (code: string) => void;
   /** Disable input (e.g. while verifying). */
   disabled?: boolean;
+  /** Override design tokens for this numpad (merged over the active theme). */
+  theme?: Partial<MrbdAuthTheme>;
   className?: string;
   style?: CSSProperties;
 };
@@ -18,7 +22,15 @@ const COLUMNS = 3;
  * A 600x600-friendly, D-pad / keyboard navigable numeric pad for entering an
  * email OTP on the glasses. Auto-submits once `length` digits are entered.
  */
-export function MrbdOtpNumpad({ length = 6, onSubmit, disabled = false, className, style }: MrbdOtpNumpadProps) {
+export function MrbdOtpNumpad({
+  length = 6,
+  onSubmit,
+  disabled = false,
+  theme,
+  className,
+  style,
+}: MrbdOtpNumpadProps) {
+  const { styles } = useMrbdAuthStyles(theme);
   const [code, setCode] = useState("");
   const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -103,21 +115,7 @@ export function MrbdOtpNumpad({ length = 6, onSubmit, disabled = false, classNam
         }}
       >
         {Array.from({ length }).map((_, index) => (
-          <span
-            key={index}
-            style={{
-              width: 40,
-              height: 56,
-              display: "grid",
-              placeItems: "center",
-              borderRadius: 12,
-              border: "2px solid #2a2d31",
-              background: "#1C1E21",
-              color: "#ffffff",
-              fontSize: 28,
-              fontWeight: 800,
-            }}
-          >
+          <span key={index} style={styles.otpBox(Boolean(code[index]))}>
             {code[index] ?? ""}
           </span>
         ))}
@@ -141,7 +139,7 @@ export function MrbdOtpNumpad({ length = 6, onSubmit, disabled = false, classNam
             disabled={disabled}
             onClick={() => press(key)}
             aria-label={key === "del" ? "Delete" : key === "clear" ? "Clear" : key}
-            style={keyStyle(key)}
+            style={styles.key(key === "del" || key === "clear")}
           >
             {key === "del" ? "⌫" : key === "clear" ? "✕" : key}
           </button>
@@ -149,20 +147,4 @@ export function MrbdOtpNumpad({ length = 6, onSubmit, disabled = false, classNam
       </div>
     </div>
   );
-}
-
-function keyStyle(key: (typeof KEYS)[number]): CSSProperties {
-  const accent = key === "del" || key === "clear";
-  return {
-    minHeight: 88,
-    borderRadius: 24,
-    border: "2px solid transparent",
-    background: accent ? "#26282c" : "#1C1E21",
-    color: accent ? "#9ca3af" : "#ffffff",
-    font: "inherit",
-    fontSize: 26,
-    fontWeight: 800,
-    cursor: "pointer",
-    transition: "transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease",
-  };
 }
