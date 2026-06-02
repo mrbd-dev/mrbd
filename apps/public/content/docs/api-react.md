@@ -42,4 +42,10 @@ useDpadNavigation({
 
 `useMetaRayBanDisplayRequest(headers)` returns whether the supplied request headers identify the Meta Ray-Ban Display browser.
 
+## Head keyboard
+
+`MrbdKeyboardProvider` + `useMrbdTextInput()` provide a head-aimed, predictive text-input overlay. Wrap the app in the provider, then `const text = await requestText({ title })` resolves with the typed string (or `null` if cancelled). See [Head Keyboard](/docs/keyboard) for the full guide.
+
+Also exported: `MrbdHeadKeyboard` (controlled surface), `useMrbdHeadPointer`, `createMrbdHeadPointer`, `createMrbdPredictionEngine`, `MRBD_DEFAULT_WORDLIST`, and `MRBD_DEFAULT_KEYBOARD_LAYOUT`.
+
 The React package has a peer dependency on React and depends on `@mrbd/core`.
