@@ -1,6 +1,6 @@
 {
   "name": "@mrbd/react",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "React components and hooks for Meta Ray-Ban Display web apps.",
   "type": "module",
   "license": "MIT",
