@@ -1,5 +1,11 @@
 # @mrbd/react
 
+## 0.4.1
+
+### Patch Changes
+
+- b8f015d: Add a number row (1–0) to the default head keyboard layout, above the letters, so digits can be typed without a separate symbol mode. Also exports `MRBD_DEFAULT_NUMBERS`.
+
 ## 0.4.0
 
 ### Minor Changes
