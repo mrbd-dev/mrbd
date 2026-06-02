@@ -15,12 +15,19 @@ function lettersRow(letters: string): MrbdKeyDef[] {
   return letters.split("").map((c) => ({ label: c, value: c.toLowerCase() }));
 }
 
-/** Default QWERTY layout with a punctuation row at the bottom. */
+function charsRow(chars: string[]): MrbdKeyDef[] {
+  return chars.map((c) => ({ label: c, value: c }));
+}
+
+export const MRBD_DEFAULT_NUMBERS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
+
+/** Default QWERTY layout with a number row on top and punctuation at the bottom. */
 export const MRBD_DEFAULT_KEYBOARD_LAYOUT: MrbdKeyboardLayout = {
   rows: [
+    charsRow(MRBD_DEFAULT_NUMBERS),
     lettersRow("QWERTYUIOP"),
     lettersRow("ASDFGHJKL"),
     lettersRow("ZXCVBNM"),
-    MRBD_DEFAULT_PUNCTUATION.map((p) => ({ label: p, value: p })),
+    charsRow(MRBD_DEFAULT_PUNCTUATION),
   ],
 };
