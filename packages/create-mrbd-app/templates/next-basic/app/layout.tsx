@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 
+import { MrbdKeyboardRoot } from "@/components/mrbd-keyboard-root";
 import { isOnMetaRayBanDisplay } from "@/lib/mrbd-device";
 
 export const metadata: Metadata = {
@@ -29,7 +30,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
   return (
     <html lang="en" className={onGlasses ? "dark mrbd-glasses" : undefined}>
-      <body className="bg-background text-foreground">{children}</body>
+      <body className="bg-background text-foreground">
+        {/* On glasses, native inputs open the head keyboard automatically. */}
+        <MrbdKeyboardRoot autoBind={onGlasses}>{children}</MrbdKeyboardRoot>
+      </body>
     </html>
   );
 }

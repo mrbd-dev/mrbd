@@ -52,6 +52,12 @@ export function useMrbdHeadPointer(initialConfig: MrbdHeadPointerConfig = {}): U
     const session = await requestAndStartMrbdSensors({
       onOrientation: (orientation) => {
         orientationRef.current = { heading: orientation.heading, tilt: orientation.tilt };
+        // Advance the smoothing filter on each real sensor sample (~50Hz) rather
+        // than once per animation frame — feeding it at the rAF rate injects
+        // duplicate samples that spike the 1€ filter's velocity estimate and
+        // make it briefly stop smoothing (perceived as jitter). `read()` then
+        // just returns the latest filtered cursor.
+        pointerRef.current.update(orientationRef.current);
       },
       onError: setError,
     });
@@ -72,7 +78,9 @@ export function useMrbdHeadPointer(initialConfig: MrbdHeadPointerConfig = {}): U
   }, []);
 
   const calibrate = useCallback(() => pointerRef.current.calibrate(orientationRef.current), []);
-  const read = useCallback(() => pointerRef.current.update(orientationRef.current), []);
+  // The filter is advanced from the sensor callback (sample-timed); reading just
+  // returns the latest smoothed cursor so the rAF loop doesn't re-filter at 60Hz.
+  const read = useCallback(() => pointerRef.current.cursor, []);
   const isCalibrated = useCallback(() => pointerRef.current.isCalibrated(), []);
 
   useEffect(() => stop, [stop]);

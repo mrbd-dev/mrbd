@@ -51,6 +51,12 @@ This app depends on three first-party packages. Prefer these over reimplementing
 
 - **`@mrbd/core`** — non-React device APIs. Sensors and location, e.g. `requestAndStartMrbdSensors({ onOrientation, onMotion })` and `getCurrentMrbdPosition()`. These return result objects with an `ok` boolean — always check `result.ok` before reading data, and call `.stop()` on a sensor session when the component unmounts (see `app/page.tsx`).
 - **`@mrbd/react`** — React UI + interaction layer. Use `MrbdViewport` as the outer wrapper (renders the 600x600 frame), `MrbdButton` for D-pad-focusable buttons, and the `useDpadNavigation()` hook on any screen that needs Arrow-key focus movement. Reach for these instead of raw `<button>`/`<div>` so navigation and focus styling stay consistent.
+
+### Text input
+
+This template wraps the app in `MrbdKeyboardProvider` with `autoBind` enabled on the glasses (`components/mrbd-keyboard-root.tsx`, used in `app/layout.tsx`). That means **plain native `<input>` / `<textarea>` fields just work on the glasses** — focusing one and pressing Enter opens the head-aimed keyboard, and the typed text flows back through the field's normal `onChange`. Write ordinary React inputs; you don't need to call any keyboard API. `type="tel"`/`type="number"` (or `inputmode="numeric"`) get a numeric layout, `maxLength` is respected, and `placeholder`/`aria-label` become the keyboard title. Opt a field out with `data-mrbd-keyboard="off"`. On phones/computers the provider leaves inputs alone so the device's own keyboard is used.
+
+The wearer aims a reticle with head orientation and pinches to type a key, or **pinch-and-holds to swipe a whole word** — gliding the reticle across the letters and pinching to finish, with the path decoded into the most likely word (swipe left/right to pick a different match, or left at the best match to delete the word). Smoothing is tuned for the glasses out of the box; pass a `config` to `MrbdKeyboardProvider` only if you need to retune it (`minCutoff`/`beta`). Don't reimplement text entry — rely on this provider so behavior matches the rest of the platform.
 - **`@mrbd/auth`** — authentication. Import the React entrypoint from `@mrbd/auth/react`.
 
 When adding a new screen, the standard shell is:

@@ -31,3 +31,18 @@ export const MRBD_DEFAULT_KEYBOARD_LAYOUT: MrbdKeyboardLayout = {
     charsRow(MRBD_DEFAULT_PUNCTUATION),
   ],
 };
+
+/**
+ * Numeric layout for `type="number" | "tel"` (and `inputmode` numeric/decimal/tel)
+ * fields — larger keys arranged like a phone dialpad with the common numeric
+ * punctuation a wearer needs (decimal point, plus, dash, comma).
+ */
+export const MRBD_NUMERIC_KEYBOARD_LAYOUT: MrbdKeyboardLayout = {
+  rows: [
+    charsRow(["1", "2", "3"]),
+    charsRow(["4", "5", "6"]),
+    charsRow(["7", "8", "9"]),
+    charsRow([".", "0", "-"]),
+    charsRow(["+", ",", "#", "*"]),
+  ],
+};
