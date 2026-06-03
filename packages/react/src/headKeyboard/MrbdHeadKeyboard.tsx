@@ -4,6 +4,12 @@ import type { MrbdHeadPointerConfig } from "./headPointer.js";
 import { gestureForKey, type MrbdKeyboardGesture } from "./input.js";
 import { MRBD_DEFAULT_KEYBOARD_LAYOUT, type MrbdKeyboardLayout } from "./layout.js";
 import { createMrbdPredictionEngine, type MrbdPredictionEngine } from "./prediction.js";
+import {
+  createMrbdSwipeDecoder,
+  type MrbdSwipeDecoder,
+  type MrbdSwipeKeyPositions,
+  type MrbdSwipePoint,
+} from "./swipe.js";
 import { useMrbdHeadPointer } from "./useMrbdHeadPointer.js";
 
 export type MrbdHeadKeyboardProps = {
@@ -17,13 +23,23 @@ export type MrbdHeadKeyboardProps = {
   config?: MrbdHeadPointerConfig;
   /** Suggestions shown in the bar / word menu. Default 5. */
   suggestionCount?: number;
+  /**
+   * Swipe-to-type decoder. A bare pinch-and-hold starts a swipe word; aim across
+   * the letters and pinch (Enter) to commit the best match. Defaults to a
+   * decoder built from the prediction word list. Pass `null` to disable swiping.
+   */
+  swipeDecoder?: MrbdSwipeDecoder | null;
 };
 
 const ARROW_ENTER_GUARD = 240; // ignore an Enter that piggybacks a swipe
 const ENTER_CLICK_WINDOW = 1200; // a pinch fires Enter + click; ignore the trailing click
 const HOVER_MAX_DIST = 70;
+// A pinch (Enter) immediately followed by a pinch-and-hold (Unidentified) within
+// this window opens the command menu. A bare hold (no preceding Enter) is left
+// unbound — reserved for starting a swipe word in the swipe keyboard.
+const HOLD_COMBO_WINDOW = 1000;
 
-type MenuKind = "word" | "recenter" | null;
+type MenuKind = "word" | "recenter" | "directions" | "settings" | null;
 
 const STYLE_ID = "mrbd-head-keyboard-style";
 const CSS = `
@@ -45,13 +61,33 @@ const CSS = `
 .mrbd-kb-corner { position: absolute; top: 0; width: 70px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; border-radius: 10px; background: #14161b; border: 2px solid transparent; z-index: 3; }
 .mrbd-kb-corner.cancel { left: 0; color: #ff6b6b; }
 .mrbd-kb-corner.done { right: 0; color: #00d4ff; }
-.mrbd-kb-reticle { position: absolute; width: 24px; height: 24px; margin-left: -12px; margin-top: -12px; border: 2px solid #fff; border-radius: 50%; pointer-events: none; z-index: 30; box-shadow: 0 0 12px rgba(255,255,255,0.7); }
+.mrbd-kb-reticle { position: absolute; width: 24px; height: 24px; margin-left: -12px; margin-top: -12px; border: 2px solid #fff; border-radius: 50%; pointer-events: none; z-index: 30; box-shadow: 0 0 12px rgba(255,255,255,0.7); transition: border-color 100ms ease, box-shadow 100ms ease; }
 .mrbd-kb-reticle::after { content: ""; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px; background: #00d4ff; border-radius: 50%; }
+.mrbd-kb-reticle.swiping { border-color: #00ffa3; box-shadow: 0 0 16px rgba(0,255,163,0.9); }
+.mrbd-kb-trail { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 29; overflow: visible; }
+.mrbd-kb-trail polyline { fill: none; stroke: #00ffa3; stroke-width: 5; stroke-linejoin: round; stroke-linecap: round; opacity: 0.85; }
+.mrbd-kb-swipebadge { position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 31; font-size: 12px; font-weight: 800; letter-spacing: 2px; color: #001014; background: #00ffa3; border-radius: 0 0 8px 8px; padding: 3px 12px; box-shadow: 0 0 14px rgba(0,255,163,0.6); }
+.mrbd-kb-sug.alt { color: #00ffa3; border-color: rgba(0,255,163,0.45); }
+.mrbd-kb-sug.alt .rank { color: #00ffa3; }
+.mrbd-kb-sug.alt.top { background: rgba(0,255,163,0.16); }
 .mrbd-kb-menu { position: absolute; inset: 0; background: rgba(0,0,0,0.82); z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; }
 .mrbd-kb-menu h2 { margin: 0; font-size: 16px; color: #00d4ff; letter-spacing: 1px; }
 .mrbd-kb-menu .opts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
 .mrbd-kb-opt { min-width: 120px; height: 60px; padding: 0 18px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: #fff; background: #1c1e21; border: 2px solid transparent; border-radius: 12px; }
 .mrbd-kb-menu .hint { font-size: 12px; color: #6b6f76; }
+.mrbd-kb-settings { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 380px; }
+.mrbd-kb-settings .srow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; font-size: 17px; font-weight: 700; color: #6b6f76; background: #14161b; border: 1.5px solid #23262d; border-radius: 10px; }
+.mrbd-kb-settings .srow span { font-size: 12px; font-weight: 400; color: #4a4e55; }
+.mrbd-kb-dirmenu { position: absolute; inset: 0; z-index: 25; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px; box-sizing: border-box; background: rgba(5,7,10,0.74); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); animation: mrbd-kb-fade 120ms ease-out; }
+@keyframes mrbd-kb-fade { from { opacity: 0; } to { opacity: 1; } }
+.mrbd-kb-dir-row { display: flex; align-items: center; justify-content: center; gap: 16px; }
+.mrbd-kb-dir { display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 116px; padding: 9px 16px; background: #0f1218; border: 2px solid #00d4ff; border-radius: 14px; box-shadow: 0 0 18px rgba(0,212,255,0.22); }
+.mrbd-kb-dir.down { flex-direction: column-reverse; }
+.mrbd-kb-dir .ar { font-size: 32px; line-height: 1; font-weight: 700; color: #00d4ff; }
+.mrbd-kb-dir .lbl { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: 0.3px; }
+.mrbd-kb-dir .sub { font-size: 11px; color: #9aa0a6; }
+.mrbd-kb-dir-hub { width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; letter-spacing: 3px; color: #00d4ff; border: 2px dashed #2a2d33; }
+.mrbd-kb-dir-foot { margin-top: 4px; font-size: 11px; color: #6b6f76; text-align: center; }
 .mrbd-kb-footer { font-size: 10px; color: #6b6f76; text-align: center; line-height: 1.4; }
 .mrbd-kb-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center; }
 .mrbd-kb-overlay h1 { margin: 0; font-size: 22px; color: #00d4ff; }
@@ -86,6 +122,7 @@ export function MrbdHeadKeyboard({
   prediction,
   config,
   suggestionCount = 5,
+  swipeDecoder,
 }: MrbdHeadKeyboardProps) {
   useInjectedStyle();
 
@@ -93,18 +130,46 @@ export function MrbdHeadKeyboard({
     () => prediction ?? createMrbdPredictionEngine(),
     [prediction],
   );
+  // `undefined` => build a default decoder; `null` => swiping disabled.
+  const swiper = useMemo<MrbdSwipeDecoder | null>(
+    () => (swipeDecoder === undefined ? createMrbdSwipeDecoder() : swipeDecoder),
+    [swipeDecoder],
+  );
   const pointer = useMrbdHeadPointer(config);
 
   const [phase, setPhase] = useState<"calibrate" | "type">("calibrate");
   const [menuKind, setMenuKind] = useState<MenuKind>(null);
+  const [swiping, setSwiping] = useState(false);
+  // Alternative words from the last swipe (best match inserted first); the wearer
+  // can swipe left/right to cycle them or swipe down to pick from the menu.
+  const [swipeAlternatives, setSwipeAlternatives] = useState<string[]>([]);
+  const [swipeAltIndex, setSwipeAltIndex] = useState(0);
 
   const areaRef = useRef<HTMLDivElement>(null);
   const reticleRef = useRef<HTMLDivElement>(null);
+  const trailRef = useRef<SVGPolylineElement>(null);
   const startBtnRef = useRef<HTMLButtonElement>(null);
   const centersRef = useRef<Center[]>([]);
+  // Letter -> key center, rebuilt on each "type" measure; feeds the swipe decoder.
+  const keysRef = useRef<MrbdSwipeKeyPositions>({});
   const hoverRef = useRef<HTMLElement | null>(null);
   const lastArrowRef = useRef(0);
   const lastEnterRef = useRef(0);
+  // Swipe-in-progress flag + recorded reticle path, kept in refs for the rAF loop.
+  const swipingRef = useRef(false);
+  const swipePathRef = useRef<MrbdSwipePoint[]>([]);
+  // Value snapshot taken when a swipe word commits, so picking an alternative can
+  // cleanly swap it for the chosen word.
+  const swipeBaseRef = useRef("");
+  const swipeAltsRef = useRef<string[]>([]);
+  swipeAltsRef.current = swipeAlternatives;
+  const swipeAltIndexRef = useRef(0);
+  swipeAltIndexRef.current = swipeAltIndex;
+  // Timestamp of the last Enter/select keydown, and a snapshot of `value` taken
+  // just before that select inserted a character — used to detect the Enter→hold
+  // combo and to undo the character the Enter typed when it opens the menu.
+  const lastSelectAtRef = useRef(0);
+  const revertValueRef = useRef<string | null>(null);
 
   // keep latest value/menu in refs for the rAF + key handlers
   const valueRef = useRef(value);
@@ -127,7 +192,7 @@ export function MrbdHeadKeyboard({
     if (!area) return;
     const rect = area.getBoundingClientRect();
     const nodes = area.querySelectorAll<HTMLElement>(`[data-kbtarget][data-scope="${scope}"]`);
-    centersRef.current = Array.from(nodes).map((el) => {
+    const centers = Array.from(nodes).map((el) => {
       const box = el.getBoundingClientRect();
       return {
         el,
@@ -137,6 +202,15 @@ export function MrbdHeadKeyboard({
         value: el.dataset.value ?? "",
       };
     });
+    centersRef.current = centers;
+    if (scope === "type") {
+      // Rebuild the single-letter key map the swipe decoder traces over.
+      const keys: MrbdSwipeKeyPositions = {};
+      for (const c of centers) {
+        if (c.kind === "char" && c.value.length === 1) keys[c.value] = { x: c.cx, y: c.cy };
+      }
+      keysRef.current = keys;
+    }
   }, []);
 
   const setHover = useCallback((el: HTMLElement | null) => {
@@ -152,24 +226,78 @@ export function MrbdHeadKeyboard({
     setTimeout(() => el.classList.remove("mrbd-kb-flash"), 120);
   }, []);
 
+  // ---- swipe alternatives ----
+  const clearAlternatives = useCallback(() => {
+    if (swipeAltsRef.current.length) {
+      setSwipeAlternatives([]);
+      setSwipeAltIndex(0);
+    }
+  }, []);
+
   // ---- text ops ----
-  const insertChar = useCallback((ch: string) => onChange(valueRef.current + ch), [onChange]);
-  const backspace = useCallback(() => onChange(valueRef.current.slice(0, -1)), [onChange]);
+  const insertChar = useCallback(
+    (ch: string) => {
+      clearAlternatives();
+      onChange(valueRef.current + ch);
+    },
+    [clearAlternatives, onChange],
+  );
+  const backspace = useCallback(() => {
+    clearAlternatives();
+    onChange(valueRef.current.slice(0, -1));
+  }, [clearAlternatives, onChange]);
   const acceptWord = useCallback(
     (word: string) => {
+      clearAlternatives();
       const v = valueRef.current;
       const cw = currentWord(v);
       const head = cw ? v.slice(0, v.length - cw.length) : v;
       onChange(head + word + " ");
       engine.learn(word);
     },
+    [clearAlternatives, engine, onChange],
+  );
+  // Replace the just-swiped word with a chosen alternative (same insertion point)
+  // and dismiss the alternatives — used by the swipe-down word menu.
+  const pickAlternative = useCallback(
+    (word: string) => {
+      onChange(swipeBaseRef.current + word + " ");
+      engine.learn(word);
+      setSwipeAlternatives([]);
+      setSwipeAltIndex(0);
+    },
     [engine, onChange],
+  );
+
+  // Step through the swipe alternatives in place after a swipe. Right advances to
+  // the next match (clamped at the last). Left steps back toward the best match;
+  // a left at the first match deletes the whole swiped word and dismisses. The
+  // alternatives stay on screen while cycling; typing or a new swipe dismisses.
+  const stepAlternative = useCallback(
+    (dir: 1 | -1) => {
+      const alts = swipeAltsRef.current;
+      if (!alts.length) return;
+      const idx = swipeAltIndexRef.current;
+      if (dir === -1 && idx === 0) {
+        // first back-swipe after a swipe word -> delete the whole word
+        onChange(swipeBaseRef.current);
+        setSwipeAlternatives([]);
+        setSwipeAltIndex(0);
+        return;
+      }
+      const next = dir === 1 ? Math.min(alts.length - 1, idx + 1) : idx - 1;
+      if (next === idx) return; // already at the far end — nothing to do
+      setSwipeAltIndex(next);
+      onChange(swipeBaseRef.current + alts[next] + " ");
+    },
+    [onChange],
   );
 
   // ---- menus ----
   const openMenu = useCallback(
     (kind: Exclude<MenuKind, null>) => {
-      if (kind === "word" && suggestionsRef.current.length === 0) return;
+      if (kind === "word" && suggestionsRef.current.length === 0 && swipeAltsRef.current.length === 0)
+        return;
       setMenuKind(kind);
       requestAnimationFrame(() => measure("menu"));
       setHover(null);
@@ -182,42 +310,181 @@ export function MrbdHeadKeyboard({
     requestAnimationFrame(() => measure("type"));
   }, [measure, setHover]);
 
+  // ---- swipe-to-type ----
+  const clearTrail = useCallback(() => {
+    trailRef.current?.setAttribute("points", "");
+  }, []);
+
+  const startSwipe = useCallback(() => {
+    if (!swiper || menuRef.current) return;
+    const c = pointer.read();
+    swipeBaseRef.current = valueRef.current;
+    swipePathRef.current = [{ x: c.x, y: c.y }];
+    swipingRef.current = true;
+    setSwiping(true);
+    setSwipeAlternatives([]);
+    setHover(null);
+    clearTrail();
+  }, [clearTrail, pointer, setHover, swiper]);
+
+  const cancelSwipe = useCallback(() => {
+    swipingRef.current = false;
+    swipePathRef.current = [];
+    setSwiping(false);
+    clearTrail();
+  }, [clearTrail]);
+
+  const commitSwipe = useCallback(() => {
+    swipingRef.current = false;
+    setSwiping(false);
+    const path = swipePathRef.current;
+    swipePathRef.current = [];
+    clearTrail();
+    if (!swiper) return;
+    const candidates = swiper.decode(path, keysRef.current, suggestionCount);
+    if (candidates.length === 0) return; // too short / no match — leave text untouched
+    const [best, ...rest] = candidates;
+    // swipeBaseRef was snapshotted at swipe start; insert the best word after it.
+    onChange(swipeBaseRef.current + best.word + " ");
+    engine.learn(best.word);
+    setSwipeAltIndex(0);
+    // Keep the just-swiped state active even for a unique match so a back-swipe
+    // can delete the whole word; extra matches (if any) are cycle targets.
+    setSwipeAlternatives([best.word, ...rest.map((c) => c.word)]);
+  }, [clearTrail, engine, onChange, suggestionCount, swiper]);
+
   // ---- selection ----
   const selectHovered = useCallback(() => {
+    revertValueRef.current = null;
     const el = hoverRef.current;
     if (!el) return;
     flash(el);
     const kind = el.dataset.kind ?? "char";
     const val = el.dataset.value ?? "";
     if (menuRef.current) {
-      if (kind === "word") acceptWord(val);
+      // Only the predictive word + recenter menus use head-aim selection; the
+      // directional/settings menus are swipe-driven (see handleGesture).
+      if (kind === "swipe-word") pickAlternative(val);
+      else if (kind === "word") acceptWord(val);
       else if (kind === "recenter") pointer.calibrate();
       closeMenu();
       return;
     }
-    if (kind === "char") insertChar(val);
-    else if (kind === "done") onSubmit?.(valueRef.current);
-    else if (kind === "cancel") onCancel?.();
-  }, [acceptWord, closeMenu, flash, insertChar, onCancel, onSubmit, pointer]);
+    if (kind === "char") {
+      revertValueRef.current = valueRef.current; // snapshot so an Enter→hold combo can undo this
+      insertChar(val);
+    } else if (kind === "done") {
+      onSubmit?.(valueRef.current);
+    } else if (kind === "cancel") {
+      onCancel?.();
+    }
+  }, [acceptWord, closeMenu, flash, insertChar, onCancel, onSubmit, pickAlternative, pointer]);
 
   const handleGesture = useCallback(
     (gesture: MrbdKeyboardGesture) => {
-      if (gesture === "select") {
-        selectHovered();
+      // ---- mid-swipe: only back / another hold cancels; Enter commits (in keydown) ----
+      if (swipingRef.current) {
+        if (gesture === "back" || gesture === "hold") cancelSwipe();
         return;
       }
-      if (menuRef.current) {
-        // inside a menu only "back"/recenter-swipe-up closes; head-aim selects
-        if (gesture === "recenter-menu" || gesture === "back") closeMenu();
+
+      const menu = menuRef.current;
+
+      // ---- swipe-driven directional command menu (opened by pinch-and-hold) ----
+      if (menu === "directions") {
+        switch (gesture) {
+          case "space": // swipe right -> Enter / submit
+            onSubmit?.(valueRef.current);
+            break;
+          case "word-menu": // swipe down -> recalibrate the neutral pose
+            pointer.calibrate();
+            closeMenu();
+            break;
+          case "recenter-menu": // swipe up -> keyboard settings (reserved)
+            setMenuKind("settings");
+            break;
+          case "back": // back gesture -> close the whole keyboard
+            onCancel?.();
+            break;
+          case "delete": // swipe left -> back out of the menu
+          case "hold": // another hold -> dismiss the menu
+            closeMenu();
+            break;
+          default:
+            break; // ignore select / aim inside the directional menu
+        }
+        return;
+      }
+
+      // ---- settings menu (placeholder for specialized actions) ----
+      if (menu === "settings") {
+        if (gesture === "delete") setMenuKind("directions"); // swipe left -> back to directions
+        else if (gesture === "hold" || gesture === "back") closeMenu();
+        return;
+      }
+
+      // ---- aim-driven menus (predictive words / recenter) ----
+      if (menu === "word" || menu === "recenter") {
+        if (gesture === "select") {
+          selectHovered();
+          return;
+        }
+        if (gesture === "recenter-menu" || gesture === "hold" || gesture === "back") closeMenu();
+        return;
+      }
+
+      // ---- just-swiped: left/right step through the matches in place ----
+      // A space is already inserted after the word, so right cycles matches
+      // instead of adding a redundant space; left steps back, and a left at the
+      // best match deletes the whole word. Any other action dismisses.
+      if (swipeAltsRef.current.length) {
+        if (gesture === "space") {
+          stepAlternative(1);
+          return;
+        }
+        if (gesture === "delete") {
+          stepAlternative(-1);
+          return;
+        }
+      }
+
+      // ---- normal typing ----
+      if (gesture === "select") {
+        selectHovered();
         return;
       }
       if (gesture === "space") insertChar(" ");
       else if (gesture === "delete") backspace();
       else if (gesture === "word-menu") openMenu("word");
       else if (gesture === "recenter-menu") openMenu("recenter");
-      else if (gesture === "back") onCancel?.();
+      else if (gesture === "hold") {
+        // An Enter→hold combo (pinch then pinch-and-hold within the window) opens
+        // the command menu; a *bare* hold starts a swipe word.
+        if (performance.now() - lastSelectAtRef.current <= HOLD_COMBO_WINDOW) {
+          if (revertValueRef.current != null) {
+            onChange(revertValueRef.current); // undo the char the preceding Enter typed
+            revertValueRef.current = null;
+          }
+          openMenu("directions");
+        } else {
+          startSwipe();
+        }
+      } else if (gesture === "back") onCancel?.();
     },
-    [backspace, closeMenu, insertChar, onCancel, openMenu, selectHovered],
+    [
+      backspace,
+      cancelSwipe,
+      closeMenu,
+      stepAlternative,
+      insertChar,
+      onCancel,
+      onChange,
+      onSubmit,
+      openMenu,
+      pointer,
+      selectHovered,
+      startSwipe,
+    ],
   );
 
   // ---- key + click capture (owns input while mounted) ----
@@ -225,7 +492,7 @@ export function MrbdHeadKeyboard({
     if (typeof window === "undefined") return;
 
     const onKeyDown = (e: KeyboardEvent) => {
-      const gesture = gestureForKey(e.key);
+      const gesture = gestureForKey(e);
       if (!gesture) return;
       if (phaseRef.current !== "type") return; // let the calibrate button handle Enter
       e.preventDefault();
@@ -233,8 +500,14 @@ export function MrbdHeadKeyboard({
       const now = performance.now();
       if (gesture === "select") {
         lastEnterRef.current = now;
+        lastSelectAtRef.current = now; // mark the pinch for Enter→hold combo detection
         if ("repeat" in e && e.repeat) return;
         if (now - lastArrowRef.current < ARROW_ENTER_GUARD) return;
+        // A pinch while swiping commits the swiped word instead of typing a key.
+        if (swipingRef.current) {
+          commitSwipe();
+          return;
+        }
         selectHovered();
         return;
       }
@@ -247,6 +520,10 @@ export function MrbdHeadKeyboard({
       const now = performance.now();
       if (now - lastArrowRef.current < ARROW_ENTER_GUARD) return;
       if (now - lastEnterRef.current < ENTER_CLICK_WINDOW) return;
+      if (swipingRef.current) {
+        commitSwipe();
+        return;
+      }
       selectHovered();
     };
 
@@ -256,7 +533,7 @@ export function MrbdHeadKeyboard({
       window.removeEventListener("keydown", onKeyDown, true);
       window.removeEventListener("click", onClick, true);
     };
-  }, [handleGesture, selectHovered]);
+  }, [commitSwipe, handleGesture, selectHovered]);
 
   // ---- sensor lifecycle ----
   useEffect(() => {
@@ -276,6 +553,20 @@ export function MrbdHeadKeyboard({
           reticle.style.left = `${c.x}px`;
           reticle.style.top = `${c.y}px`;
         }
+
+        if (swipingRef.current) {
+          // Record the trace (decimated so the path stays small) and draw it.
+          const path = swipePathRef.current;
+          const last = path[path.length - 1];
+          if (!last || Math.hypot(c.x - last.x, c.y - last.y) >= 4) {
+            path.push({ x: c.x, y: c.y });
+            trailRef.current?.setAttribute(
+              "points",
+              path.map((p) => `${p.x},${p.y}`).join(" "),
+            );
+          }
+        }
+
         let best: HTMLElement | null = null;
         let bestD = Infinity;
         for (const t of centersRef.current) {
@@ -322,6 +613,10 @@ export function MrbdHeadKeyboard({
   // ---- render ----
   const cw = currentWord(value);
   const head = cw ? value.slice(0, value.length - cw.length) : value;
+  // After a swipe, the bar/word-menu show the alternative matches (top one is
+  // already inserted) so the wearer can correct it; otherwise normal completions.
+  const showingAlternatives = swipeAlternatives.length > 0;
+  const barWords = showingAlternatives ? swipeAlternatives : suggestions;
 
   return (
     <div className="mrbd-kb">
@@ -339,10 +634,14 @@ export function MrbdHeadKeyboard({
 
       <div className="mrbd-kb-suggest">
         {Array.from({ length: suggestionCount }).map((_, i) => {
-          const word = suggestions[i];
+          const word = barWords[i];
+          const selected = showingAlternatives && i === swipeAltIndex;
+          const cls = showingAlternatives
+            ? `mrbd-kb-sug alt${selected ? " top" : ""}`
+            : "mrbd-kb-sug";
           return word ? (
-            <div className="mrbd-kb-sug" key={i}>
-              <span className="rank">{i + 1}</span>
+            <div className={cls} key={i}>
+              <span className="rank">{selected ? "✓" : i + 1}</span>
               {word}
             </div>
           ) : (
@@ -380,18 +679,18 @@ export function MrbdHeadKeyboard({
           ))}
         </div>
 
-        {menuKind && (
+        {(menuKind === "word" || menuKind === "recenter") && (
           <div className="mrbd-kb-menu">
-            <h2>{menuKind === "word" ? "Pick a word" : "Re-center"}</h2>
+            <h2>{menuKind === "word" ? (showingAlternatives ? "Fix swipe word" : "Pick a word") : "Re-center"}</h2>
             <div className="opts">
               {menuKind === "word"
-                ? suggestions.map((word, i) => (
+                ? (showingAlternatives ? swipeAlternatives : suggestions).map((word, i) => (
                     <div
                       className="mrbd-kb-opt mrbd-kb-target"
                       key={i}
                       data-kbtarget
                       data-scope="menu"
-                      data-kind="word"
+                      data-kind={showingAlternatives ? "swipe-word" : "word"}
                       data-value={word}
                     >
                       {word}
@@ -409,18 +708,73 @@ export function MrbdHeadKeyboard({
                     </div>
                   )}
             </div>
-            <div className="hint">aim + click to pick · swipe up to cancel</div>
+            <div className="hint">aim + click to pick · swipe up / hold to cancel</div>
           </div>
         )}
 
-        <div className="mrbd-kb-reticle" ref={reticleRef} style={{ display: phase === "type" ? "block" : "none" }} />
+        {menuKind === "directions" && (
+          <div className="mrbd-kb-dirmenu">
+            <div className="mrbd-kb-dir up">
+              <span className="ar">↑</span>
+              <span className="lbl">Settings</span>
+              <span className="sub">layout · smoothing</span>
+            </div>
+            <div className="mrbd-kb-dir-row">
+              <div className="mrbd-kb-dir left">
+                <span className="ar">←</span>
+                <span className="lbl">Cancel</span>
+              </div>
+              <div className="mrbd-kb-dir-hub">SWIPE</div>
+              <div className="mrbd-kb-dir right">
+                <span className="ar">→</span>
+                <span className="lbl">Enter</span>
+              </div>
+            </div>
+            <div className="mrbd-kb-dir down">
+              <span className="ar">↓</span>
+              <span className="lbl">Recalibrate</span>
+            </div>
+            <div className="mrbd-kb-dir-foot">back = close keyboard · hold = dismiss</div>
+          </div>
+        )}
+
+        {menuKind === "settings" && (
+          <div className="mrbd-kb-menu">
+            <h2>Keyboard Settings</h2>
+            <div className="mrbd-kb-settings">
+              <div className="srow">
+                Layout <span>QWERTY · Numpad (soon)</span>
+              </div>
+              <div className="srow">
+                Smoothing <span>(soon)</span>
+              </div>
+            </div>
+            <div className="hint">reserved · swipe left = back · back / hold = close</div>
+          </div>
+        )}
+
+        <svg className="mrbd-kb-trail" style={{ display: swiping ? "block" : "none" }}>
+          <polyline ref={trailRef} points="" />
+        </svg>
+
+        {swiping && <div className="mrbd-kb-swipebadge">SWIPING · PINCH TO FINISH</div>}
+
+        <div
+          className={`mrbd-kb-reticle${swiping ? " swiping" : ""}`}
+          ref={reticleRef}
+          style={{
+            display:
+              phase === "type" && menuKind !== "directions" && menuKind !== "settings" ? "block" : "none",
+          }}
+        />
 
         {phase === "calibrate" && (
           <div className="mrbd-kb-overlay">
             <h1>{title ?? "Head Keyboard"}</h1>
             <p>
               Look straight at the center, hold still, then <b>pinch</b> to calibrate. Move your head to aim; click
-              to type. Swipe right = space, left = delete, down = words, up = re-center.
+              to type. <b>Pinch &amp; hold</b> starts a swipe word — glide across the letters, then <b>pinch</b> to
+              finish. Swipe right = space, left = delete, down = words, up = re-center.
             </p>
             <button ref={startBtnRef} className="mrbd-kb-start" onClick={begin}>
               CALIBRATE &amp; START
@@ -430,7 +784,19 @@ export function MrbdHeadKeyboard({
       </div>
 
       <div className="mrbd-kb-footer">
-        <b>Head</b> aims · <b>click</b> types · → space · ← delete · ↓ words · ↑ recenter · ✓ done · ✕ cancel
+        {swiping ? (
+          <>
+            <b>Swiping</b> — glide across the letters, then <b>pinch</b> to finish · hold / back to cancel
+          </>
+        ) : showingAlternatives ? (
+          <>
+            <b>Swiped</b> · → next match · ← back / delete word · ↓ menu · keep typing to keep
+          </>
+        ) : (
+          <>
+            <b>Head</b> aims · <b>click</b> types · <b>hold</b> swipe word · <b>click+hold</b> menu · → space · ← delete · ↓ words · ✓ done
+          </>
+        )}
       </div>
     </div>
   );

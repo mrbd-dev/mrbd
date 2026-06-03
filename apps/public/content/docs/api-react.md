@@ -44,8 +44,10 @@ useDpadNavigation({
 
 ## Head keyboard
 
-`MrbdKeyboardProvider` + `useMrbdTextInput()` provide a head-aimed, predictive text-input overlay. Wrap the app in the provider, then `const text = await requestText({ title })` resolves with the typed string (or `null` if cancelled). See [Head Keyboard](/docs/keyboard) for the full guide.
+`MrbdKeyboardProvider` + `useMrbdTextInput()` provide a head-aimed, predictive text-input overlay. Wrap the app in the provider, then `const text = await requestText({ title })` resolves with the typed string (or `null` if cancelled). For the common case, enable `autoBind` **on the glasses only** so native `<input>`/`<textarea>` fields open the keyboard automatically — this is how the `create-mrbd-app` template wires it. The wearer aims with head orientation and pinches to type, or **pinch-and-holds to swipe whole words** (glide across the letters, pinch to finish, swipe left/right to pick a different match). See [Head Keyboard](/docs/keyboard) for the full guide.
 
-Also exported: `MrbdHeadKeyboard` (controlled surface), `useMrbdHeadPointer`, `createMrbdHeadPointer`, `createMrbdPredictionEngine`, `MRBD_DEFAULT_WORDLIST`, and `MRBD_DEFAULT_KEYBOARD_LAYOUT`.
+Also exported: `MrbdHeadKeyboard` (controlled surface), `MrbdInput` / `MrbdTextArea` and `useMrbdKeyboardField()` (per-field opt-in), `useMrbdHeadPointer`, `createMrbdHeadPointer`, `createMrbdPredictionEngine`, `createMrbdSwipeDecoder`, `MRBD_DEFAULT_WORDLIST`, `MRBD_DEFAULT_KEYBOARD_LAYOUT`, and `MRBD_NUMERIC_KEYBOARD_LAYOUT`.
+
+The head pointer ships with smoothing tuned for the glasses by default (`minCutoff` `0.4`, `beta` `0.02`); override per app via the provider's `config`. The default swipe decoder is enabled automatically — pass `swipeDecoder` to customize the vocabulary/tuning, or `swipeDecoder={null}` to disable swiping.
 
 The React package has a peer dependency on React and depends on `@mrbd/core`.
