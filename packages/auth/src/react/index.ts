@@ -32,6 +32,8 @@ export {
 export type { MrbdAuthTheme, MrbdAuthStyles } from "./theme.js";
 export { MrbdOtpNumpad } from "./MrbdOtpNumpad.js";
 export type { MrbdOtpNumpadProps } from "./MrbdOtpNumpad.js";
+export { MrbdOtpInput } from "./MrbdOtpInput.js";
+export type { MrbdOtpInputProps } from "./MrbdOtpInput.js";
 export { MrbdSignInScreen } from "./MrbdSignInScreen.js";
 export type { MrbdSignInScreenProps } from "./MrbdSignInScreen.js";
 export { MrbdEmailSignInScreen } from "./MrbdEmailSignInScreen.js";

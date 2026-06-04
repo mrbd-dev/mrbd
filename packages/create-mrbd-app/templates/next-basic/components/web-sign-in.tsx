@@ -11,8 +11,8 @@ import { MRBD_APP_ID } from "@/lib/mrbd-app";
 // code right here. The resulting session shares the same MRBD user as the glasses.
 export function WebSignIn() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-[#0a0a0f] px-6 py-16 text-white">
-      <div className="w-full max-w-md">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-black px-6 py-16 text-white">
+      <div className="w-full max-w-sm">
         <MrbdAuthProvider appId={MRBD_APP_ID}>
           <MrbdAuthGate fallback={<MrbdEmailSignInScreen className="w-full" />}>
             <SignedIn />
@@ -20,7 +20,7 @@ export function WebSignIn() {
         </MrbdAuthProvider>
       </div>
 
-      <Link href="/" className="text-sm font-bold uppercase tracking-[0.2em] text-cyan-300 hover:text-cyan-200">
+      <Link href="/" className="text-sm text-neutral-400 underline hover:text-white">
         Back home
       </Link>
     </main>
@@ -31,15 +31,14 @@ function SignedIn() {
   const { session, signOut } = useMrbdAuth();
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-[#16181d] p-8">
-      <p className="text-sm font-bold uppercase tracking-[0.24em] text-cyan-300">Signed in</p>
-      <h1 className="mt-2 text-3xl font-black leading-tight">Welcome back</h1>
-      <p className="mt-3 break-all text-sm text-zinc-400">User: {session?.userId}</p>
+    <div className="border border-white p-4">
+      <h1 className="text-xl font-semibold">Signed in</h1>
+      <p className="mt-2 break-all text-sm text-neutral-400">User: {session?.userId}</p>
 
       <button
         type="button"
         onClick={() => void signOut()}
-        className="mt-6 w-full rounded-xl bg-cyan-400 px-4 py-3 font-bold text-black transition-colors hover:bg-cyan-300"
+        className="mt-4 w-full border border-white bg-white px-4 py-2 text-sm font-medium text-black hover:bg-neutral-200"
       >
         Sign out
       </button>

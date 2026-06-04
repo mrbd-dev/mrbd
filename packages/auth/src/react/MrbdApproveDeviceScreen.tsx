@@ -46,31 +46,32 @@ export function MrbdApproveDeviceScreen({
   if (!canApprove) {
     return (
       <div className={className} style={{ ...styles.container, ...style }}>
-        <p style={styles.hint}>Sign in on this device before approving another device.</p>
+        <p style={styles.hint}>Sign in on this device first.</p>
       </div>
     );
   }
 
   return (
     <div className={className} style={{ ...styles.container, ...style }}>
-      <header style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <p style={styles.label}>Approve a device</p>
-        <h1 style={styles.heading}>{title ?? "Sign in your other device"}</h1>
-      </header>
+      <h1 style={styles.heading}>{title ?? "Approve device"}</h1>
 
       {(phase === "idle" || phase === "approving" || phase === "error") && (
-        <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <p style={styles.hint}>Enter the code shown on the device you want to sign in.</p>
+        <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <p style={styles.hint}>Enter the code shown on the other device.</p>
           <input
             type="text"
             inputMode="text"
             autoComplete="one-time-code"
             autoFocus
             value={code}
-            onChange={(event) => setCode(event.target.value)}
+            onChange={(event) => setCode(event.target.value.toUpperCase())}
+            onPaste={(event) => {
+              event.preventDefault();
+              setCode(event.clipboardData.getData("text").toUpperCase().replace(/\s/g, ""));
+            }}
             placeholder="ABC-123"
             className="mrbd-focusable"
-            style={{ ...styles.input, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 800 }}
+            style={{ ...styles.input, letterSpacing: "0.1em", textTransform: "uppercase" }}
             aria-label="Device code"
             disabled={phase === "approving"}
           />
@@ -90,7 +91,7 @@ export function MrbdApproveDeviceScreen({
         </form>
       )}
 
-      {phase === "done" && <p style={styles.hint}>Approved. Your other device is signing in now.</p>}
+      {phase === "done" && <p style={styles.hint}>Approved. The other device is signing in.</p>}
     </div>
   );
 }

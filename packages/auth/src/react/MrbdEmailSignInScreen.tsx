@@ -2,7 +2,7 @@ import { useState, type CSSProperties, type FormEvent, type ReactNode } from "re
 
 import type { MrbdSession } from "../types.js";
 import { useMrbdEmailSignIn } from "./hooks.js";
-import { MrbdOtpNumpad } from "./MrbdOtpNumpad.js";
+import { MrbdOtpInput } from "./MrbdOtpInput.js";
 import { useMrbdAuthStyles, type MrbdAuthTheme } from "./theme.js";
 
 export type MrbdEmailSignInScreenProps = {
@@ -48,14 +48,11 @@ export function MrbdEmailSignInScreen({
 
   return (
     <div className={className} style={{ ...styles.container, ...style }}>
-      <header style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <p style={styles.label}>MRBD Sign in</p>
-        <h1 style={styles.heading}>{title ?? "Sign in to continue"}</h1>
-      </header>
+      <h1 style={styles.heading}>{title ?? "Sign in"}</h1>
 
       {phase === "email" && (
-        <form onSubmit={submitEmail} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <p style={styles.hint}>Enter your email and we'll send you a one-time code.</p>
+        <form onSubmit={submitEmail} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <p style={styles.hint}>Email</p>
           <input
             type="email"
             inputMode="email"
@@ -74,14 +71,16 @@ export function MrbdEmailSignInScreen({
         </form>
       )}
 
-      {phase === "sending_otp" && <p style={styles.hint}>Sending your code…</p>}
+      {phase === "sending_otp" && <p style={styles.hint}>Sending code…</p>}
 
       {phase === "otp" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <p style={styles.hint}>
-            Enter the {otpLength}-digit code we emailed to <strong>{email}</strong>.
-          </p>
-          <MrbdOtpNumpad length={otpLength} onSubmit={(token) => void verifyOtp(token)} theme={theme} />
+          <p style={styles.hint}>Code sent to {email}</p>
+          <MrbdOtpInput
+            length={otpLength}
+            onSubmit={(token) => void verifyOtp(token)}
+            theme={theme}
+          />
           <button
             type="button"
             className="mrbd-focusable"
@@ -93,9 +92,9 @@ export function MrbdEmailSignInScreen({
         </div>
       )}
 
-      {phase === "verifying" && <p style={styles.hint}>Verifying your code…</p>}
+      {phase === "verifying" && <p style={styles.hint}>Verifying…</p>}
 
-      {phase === "done" && <p style={styles.hint}>You're signed in.</p>}
+      {phase === "done" && <p style={styles.hint}>Signed in.</p>}
 
       {error && (
         <p style={styles.error} role="alert">
