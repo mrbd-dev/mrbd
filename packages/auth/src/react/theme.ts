@@ -4,10 +4,11 @@ import { createContext, useContext, useMemo, type CSSProperties } from "react";
  * Design tokens for the built-in MRBD auth screens.
  *
  * Every default screen ({@link MrbdSignInScreen}, {@link MrbdEmailSignInScreen},
- * {@link MrbdApproveDeviceScreen}, {@link MrbdOtpNumpad}) renders from these
- * tokens, so overriding a few of them re-skins all of them at once. Provide
- * overrides app-wide via `MrbdAuthProvider`'s `theme` prop or per-screen via the
- * `theme` prop. Anything you don't set falls back to {@link defaultMrbdAuthTheme}.
+ * {@link MrbdApproveDeviceScreen}, {@link MrbdOtpNumpad}, {@link MrbdOtpInput})
+ * render from these tokens, so overriding a few of them re-skins all of them at
+ * once. Provide overrides app-wide via `MrbdAuthProvider`'s `theme` prop or
+ * per-screen via the `theme` prop. Anything you don't set falls back to
+ * {@link defaultMrbdAuthTheme}.
  *
  * If you want full control over markup (not just colors), skip these screens
  * entirely and build your own UI on the headless hooks (`useMrbdEmailSignIn`,
@@ -47,20 +48,20 @@ export type MrbdAuthTheme = {
 };
 
 export const defaultMrbdAuthTheme: MrbdAuthTheme = {
-  colorBackground: "#0a0a0f",
-  colorSurface: "#1C1E21",
-  colorSurfaceAccent: "#26282c",
-  colorBorder: "#2a2d31",
+  colorBackground: "#000000",
+  colorSurface: "#000000",
+  colorSurfaceAccent: "#1a1a1a",
+  colorBorder: "#ffffff",
   colorText: "#ffffff",
-  colorTextMuted: "#d4d4d8",
-  colorTextSubtle: "#9ca3af",
-  colorAccent: "#67e8f9",
-  colorPrimary: "#a3e635",
-  colorPrimaryText: "#0a0a0f",
-  colorDanger: "#f87171",
-  radiusLarge: 28,
-  radiusMedium: 24,
-  radiusSmall: 18,
+  colorTextMuted: "#a3a3a3",
+  colorTextSubtle: "#737373",
+  colorAccent: "#ffffff",
+  colorPrimary: "#ffffff",
+  colorPrimaryText: "#000000",
+  colorDanger: "#ffffff",
+  radiusLarge: 0,
+  radiusMedium: 0,
+  radiusSmall: 0,
   fontFamily: "inherit",
 };
 
@@ -97,6 +98,7 @@ export type MrbdAuthStyles = {
   url: CSSProperties;
   code: CSSProperties;
   input: CSSProperties;
+  otpInput: CSSProperties;
   primaryButton: CSSProperties;
   subtleButton: CSSProperties;
   retryButton: CSSProperties;
@@ -112,8 +114,8 @@ export function createMrbdAuthStyles(theme: MrbdAuthTheme): MrbdAuthStyles {
   const container: CSSProperties = {
     display: "flex",
     flexDirection: "column",
-    gap: 20,
-    padding: 24,
+    gap: 16,
+    padding: 16,
     color: theme.colorText,
     background: theme.colorBackground,
     borderRadius: theme.radiusLarge,
@@ -122,106 +124,112 @@ export function createMrbdAuthStyles(theme: MrbdAuthTheme): MrbdAuthStyles {
 
   const label: CSSProperties = {
     margin: 0,
-    fontSize: 13,
-    fontWeight: 800,
-    letterSpacing: "0.24em",
+    fontSize: 12,
+    fontWeight: 600,
+    letterSpacing: "0.08em",
     textTransform: "uppercase",
-    color: theme.colorAccent,
+    color: theme.colorTextSubtle,
   };
 
-  const heading: CSSProperties = { margin: 0, fontSize: 30, fontWeight: 900, lineHeight: 1.1 };
-  const hint: CSSProperties = { margin: 0, fontSize: 16, color: theme.colorTextMuted };
-  const subtle: CSSProperties = { margin: 0, fontSize: 13, color: theme.colorTextSubtle };
+  const heading: CSSProperties = { margin: 0, fontSize: 22, fontWeight: 700, lineHeight: 1.2 };
+  const hint: CSSProperties = { margin: 0, fontSize: 15, color: theme.colorTextMuted, lineHeight: 1.4 };
+  const subtle: CSSProperties = { margin: 0, fontSize: 13, color: theme.colorTextSubtle, lineHeight: 1.4 };
   const error: CSSProperties = { ...subtle, color: theme.colorDanger };
-  const url: CSSProperties = { margin: 0, fontSize: 24, fontWeight: 800, color: theme.colorText };
+  const url: CSSProperties = { margin: 0, fontSize: 18, fontWeight: 700, color: theme.colorText };
 
   const code: CSSProperties = {
     margin: 0,
-    fontSize: 44,
-    fontWeight: 900,
-    letterSpacing: "0.18em",
-    color: theme.colorPrimary,
+    fontSize: 32,
+    fontWeight: 700,
+    letterSpacing: "0.12em",
+    color: theme.colorText,
   };
 
   const input: CSSProperties = {
-    minHeight: 64,
+    minHeight: 48,
     borderRadius: theme.radiusSmall,
-    border: `2px solid ${theme.colorBorder}`,
+    border: `1px solid ${theme.colorBorder}`,
     background: theme.colorSurface,
     color: theme.colorText,
     font: "inherit",
     fontFamily: theme.fontFamily,
+    fontSize: 16,
+    fontWeight: 500,
+    padding: "0 12px",
+    outline: "none",
+    width: "100%",
+    boxSizing: "border-box",
+  };
+
+  const otpInput: CSSProperties = {
+    ...input,
+    textAlign: "center",
+    letterSpacing: "0.35em",
+    fontVariantNumeric: "tabular-nums",
     fontSize: 20,
     fontWeight: 600,
-    padding: "0 18px",
-    outline: "none",
+    padding: "0 16px",
   };
 
   const primaryButton: CSSProperties = {
-    minHeight: 72,
+    minHeight: 48,
     borderRadius: theme.radiusMedium,
-    border: "2px solid transparent",
+    border: `1px solid ${theme.colorBorder}`,
     background: theme.colorPrimary,
     color: theme.colorPrimaryText,
     font: "inherit",
     fontFamily: theme.fontFamily,
-    fontWeight: 900,
-    fontSize: 18,
+    fontWeight: 600,
+    fontSize: 15,
     cursor: "pointer",
+    width: "100%",
   };
 
   const subtleButton: CSSProperties = {
-    minHeight: 56,
+    minHeight: 44,
     borderRadius: theme.radiusSmall,
-    border: "2px solid transparent",
+    border: `1px solid ${theme.colorBorder}`,
     background: theme.colorSurface,
-    color: theme.colorTextSubtle,
+    color: theme.colorTextMuted,
     font: "inherit",
     fontFamily: theme.fontFamily,
-    fontWeight: 700,
-    fontSize: 15,
+    fontWeight: 500,
+    fontSize: 14,
     cursor: "pointer",
+    width: "100%",
   };
 
   const retryButton: CSSProperties = {
-    minHeight: 88,
-    borderRadius: theme.radiusMedium,
-    border: "2px solid transparent",
+    ...primaryButton,
     background: theme.colorSurface,
     color: theme.colorText,
-    font: "inherit",
-    fontFamily: theme.fontFamily,
-    fontWeight: 800,
-    fontSize: 18,
-    cursor: "pointer",
   };
 
   const otpBox = (filled: boolean): CSSProperties => ({
-    width: 40,
-    height: 56,
+    width: 36,
+    height: 48,
     display: "grid",
     placeItems: "center",
-    borderRadius: 12,
-    border: `2px solid ${theme.colorBorder}`,
+    borderRadius: theme.radiusSmall,
+    border: `1px solid ${theme.colorBorder}`,
     background: theme.colorSurface,
     color: theme.colorText,
-    fontSize: 28,
-    fontWeight: 800,
-    opacity: filled ? 1 : 0.85,
+    fontSize: 22,
+    fontWeight: 600,
+    opacity: filled ? 1 : 0.5,
   });
 
   const key = (accent: boolean): CSSProperties => ({
-    minHeight: 88,
+    minHeight: 64,
     borderRadius: theme.radiusMedium,
-    border: "2px solid transparent",
+    border: `1px solid ${theme.colorBorder}`,
     background: accent ? theme.colorSurfaceAccent : theme.colorSurface,
     color: accent ? theme.colorTextSubtle : theme.colorText,
     font: "inherit",
     fontFamily: theme.fontFamily,
-    fontSize: 26,
-    fontWeight: 800,
+    fontSize: 20,
+    fontWeight: 600,
     cursor: "pointer",
-    transition: "transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease",
   });
 
   return {
@@ -234,6 +242,7 @@ export function createMrbdAuthStyles(theme: MrbdAuthTheme): MrbdAuthStyles {
     url,
     code,
     input,
+    otpInput,
     primaryButton,
     subtleButton,
     retryButton,

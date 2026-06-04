@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 
+import { parseOtpDigits } from "./otp.js";
 import { useMrbdAuthStyles, type MrbdAuthTheme } from "./theme.js";
 
 export type MrbdOtpNumpadProps = {
@@ -21,6 +22,7 @@ const COLUMNS = 3;
 /**
  * A 600x600-friendly, D-pad / keyboard navigable numeric pad for entering an
  * email OTP on the glasses. Auto-submits once `length` digits are entered.
+ * Also accepts pasted codes when a keyboard is available.
  */
 export function MrbdOtpNumpad({
   length = 6,
@@ -33,25 +35,40 @@ export function MrbdOtpNumpad({
   const { styles } = useMrbdAuthStyles(theme);
   const [code, setCode] = useState("");
   const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
+  const pasteInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (code.length === length) {
-      onSubmit(code);
-      setCode("");
-    }
-  }, [code, length, onSubmit]);
+  const applyDigits = useCallback(
+    (raw: string) => {
+      if (disabled) return;
+      const next = parseOtpDigits(raw, length);
+      if (next.length === length) {
+        onSubmit(next);
+        setCode("");
+        return;
+      }
+      setCode(next);
+    },
+    [disabled, length, onSubmit],
+  );
 
   const press = useCallback(
     (key: (typeof KEYS)[number]) => {
       if (disabled) return;
       setCode((current) => {
-        if (key === "clear") return "";
-        if (key === "del") return current.slice(0, -1);
-        if (current.length >= length) return current;
-        return current + key;
+        let raw = current;
+        if (key === "clear") raw = "";
+        else if (key === "del") raw = current.slice(0, -1);
+        else if (current.length < length) raw = current + key;
+        else return current;
+        const next = parseOtpDigits(raw, length);
+        if (next.length === length) {
+          onSubmit(next);
+          return "";
+        }
+        return next;
       });
     },
-    [disabled, length],
+    [disabled, length, onSubmit],
   );
 
   useEffect(() => {
@@ -105,27 +122,55 @@ export function MrbdOtpNumpad({
   }, [disabled]);
 
   return (
-    <div className={className} style={{ display: "flex", flexDirection: "column", gap: 16, ...style }}>
-      <div
-        aria-live="polite"
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 10,
-        }}
-      >
-        {Array.from({ length }).map((_, index) => (
-          <span key={index} style={styles.otpBox(Boolean(code[index]))}>
-            {code[index] ?? ""}
-          </span>
-        ))}
+    <div className={className} style={{ display: "flex", flexDirection: "column", gap: 12, ...style }}>
+      <div style={{ position: "relative" }}>
+        <div
+          aria-live="polite"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 8,
+          }}
+        >
+          {Array.from({ length }).map((_, index) => (
+            <span key={index} style={styles.otpBox(Boolean(code[index]))}>
+              {code[index] ?? ""}
+            </span>
+          ))}
+        </div>
+        <input
+          ref={pasteInputRef}
+          type="text"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          tabIndex={-1}
+          aria-hidden
+          disabled={disabled}
+          value={code}
+          onChange={(event) => applyDigits(event.target.value)}
+          onPaste={(event) => {
+            event.preventDefault();
+            applyDigits(event.clipboardData.getData("text"));
+          }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            opacity: 0,
+            width: "100%",
+            height: "100%",
+            border: "none",
+            padding: 0,
+            margin: 0,
+            cursor: "text",
+          }}
+        />
       </div>
 
       <div
         style={{
           display: "grid",
           gridTemplateColumns: `repeat(${COLUMNS}, 1fr)`,
-          gap: 12,
+          gap: 8,
         }}
       >
         {KEYS.map((key, index) => (
@@ -141,7 +186,7 @@ export function MrbdOtpNumpad({
             aria-label={key === "del" ? "Delete" : key === "clear" ? "Clear" : key}
             style={styles.key(key === "del" || key === "clear")}
           >
-            {key === "del" ? "⌫" : key === "clear" ? "✕" : key}
+            {key === "del" ? "Del" : key === "clear" ? "Clr" : key}
           </button>
         ))}
       </div>
